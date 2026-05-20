@@ -16,7 +16,7 @@ export default function Home() {
         我把它設定在畫面偏下方的位置，大小剛好可以覆蓋你圖片上的木牌按鈕
       */}
       <Link
-        href="/main"
+        href="/intro"
         className="absolute top-[60%] h-24 w-80 cursor-pointer rounded-full transition-transform hover:scale-105 active:scale-95"
         title="開始遊戲"
       >
