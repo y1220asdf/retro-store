@@ -94,7 +94,7 @@ export default function CandyGame() {
           onClick={() => router.push('/main')}
           className="absolute top-4 left-4 z-20 flex items-center justify-center rounded-full border border-amber-900/40 bg-amber-50/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm transition-all hover:bg-amber-100 active:scale-95 shadow-md"
         >
-          ⬅ 返回柑仔店
+          ⬅ 返回柑仔店耶耶耶
         </button>
 
         {/* ==================== 實體互動：糖果罐點擊數數系統 ==================== */}
