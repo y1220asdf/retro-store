@@ -28,7 +28,7 @@ export default function MainGame() {
         {/* 真實的圖片標籤：max-h-[90vh] 確保它高度不會超過螢幕 90%，背包再也不會被截掉 */}
         <img 
           src="/images/main.png" 
-          alt="柑仔店主畫面" 
+          alt="柑仔店主s畫面" 
           className="block w-auto h-auto max-w-full max-h-[90vh] object-contain"
         />
         
