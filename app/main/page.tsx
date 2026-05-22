@@ -60,7 +60,7 @@ export default function MainGame() {
   }, [playDirection]); // 監聽方向切換
 
   const hotspots = [
-    { id: 'lottery',  name: '1. 抽抽樂',   href: '/lottery',  style: { top: '30%', left: '44%', width: '10%', height: '31%' } },
+    { id: 'lottery',  name: '1. 抽抽樂1',   href: '/lottery',  style: { top: '30%', left: '44%', width: '10%', height: '31%' } },
     { id: 'candy',    name: '2. 糖果罐',   href: '/candy',    style: { top: '53%', left: '15%', width: '15%', height: '15%' } },
     { id: 'calendar', name: '3. 日曆拼圖', href: '/calendar', style: { top: '65%', left: '50%', width: '8%',  height: '25%' } },
     { id: 'scale',    name: '4. 秤重',     href: '/scale',    style: { top: '52%', left: '33%', width: '15%', height: '15%' } },
