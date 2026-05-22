@@ -1,17 +1,63 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 export default function MainGame() {
   const DEV_MODE = false; 
   const [isBackpackOpen, setIsBackpackOpen] = useState(false);
+  
+  // 控制目前呈現正向（normal）還是逆向（reverse）
+  const [playDirection, setPlayDirection] = useState<'normal' | 'reverse'>('normal');
+
+  const normalVideoRef = useRef<HTMLVideoElement>(null);
+  const reverseVideoRef = useRef<HTMLVideoElement>(null);
 
   // ==================== 🔊 大廳通用點擊音效函式 ====================
   const playClickSound = () => {
     const audio = new Audio('/audio/click.mp3');
-    audio.volume = 0.2; // 20% 音量，當作輕柔的背景UI回饋
+    audio.volume = 0.2; 
     audio.play().catch((e) => console.log("音效播放被瀏覽器阻擋，等待初次互動:", e));
   };
+
+  // ==================== 🎬 雙影片無縫接力循環邏輯 ====================
+  useEffect(() => {
+    const normalVideo = normalVideoRef.current;
+    const reverseVideo = reverseVideoRef.current;
+    if (!normalVideo || !reverseVideo) return;
+
+    // 🎯 當正向影片播完：切換畫面，並強制「倒向影片」從頭開始播放
+    const handleNormalEnded = () => {
+      setPlayDirection('reverse');
+      reverseVideo.currentTime = 0;
+      reverseVideo.play().catch(e => console.log("倒向播放被阻擋:", e));
+    };
+
+    // 🎯 當倒向影片播完：切換畫面，並強制「正向影片」從頭開始播放
+    const handleReverseEnded = () => {
+      setPlayDirection('normal');
+      normalVideo.currentTime = 0;
+      normalVideo.play().catch(e => console.log("正向播放被阻擋:", e));
+    };
+
+    normalVideo.addEventListener('ended', handleNormalEnded);
+    reverseVideo.addEventListener('ended', handleReverseEnded);
+
+    // 初始啟動：進入網頁時先讓正向影片跑起來
+    normalVideo.play().catch(e => console.log(e));
+
+    // 當玩家點擊畫面任何地方，順便確保兩支影片都拿到解碼權限
+    const touchStart = () => {
+      if (playDirection === 'normal') normalVideo.play().catch(e => console.log(e));
+      if (playDirection === 'reverse') reverseVideo.play().catch(e => console.log(e));
+    };
+    window.addEventListener('click', touchStart);
+
+    return () => {
+      normalVideo.removeEventListener('ended', handleNormalEnded);
+      reverseVideo.removeEventListener('ended', handleReverseEnded);
+      window.removeEventListener('click', touchStart);
+    };
+  }, [playDirection]); // 監聽方向切換
 
   const hotspots = [
     { id: 'lottery',  name: '1. 抽抽樂',   href: '/lottery',  style: { top: '30%', left: '44%', width: '10%', height: '31%' } },
@@ -24,23 +70,30 @@ export default function MainGame() {
   return (
     <main onClick={playClickSound} className="flex h-screen w-screen items-center justify-center bg-zinc-900 p-4 overflow-hidden selection:bg-transparent">
       
-      {/* ========================================================
-          🚀 終極修復方案：
-          不使用 background-image，改用 inline-block 容器緊緊包住影片。
-          這樣熱區的百分比 (top/left) 就會 100% 鎖死在影片的相對像素上，
-          不管別人用什麼螢幕、怎麼縮放，絕對不會跑位！
-      ======================================================== */}
       <div className="relative inline-block max-w-full max-h-full rounded-lg shadow-2xl overflow-hidden border border-white/10">
         
-        {/* 🎬 換成動態影片標籤：max-h-[90vh] 確保高度不超過螢幕 90% */}
+        {/* 🎬 影片一：正向播放影片層 */}
         <video 
+          ref={normalVideoRef}
           src="/images/main.webm" 
-          poster="/images/main.webp" // 影片載入前用靜態圖墊著，防止黑畫面
-          autoPlay 
-          loop 
-          muted // 必須靜音，瀏覽器才允許自動播放
-          playsInline // 防止在手機上自動彈出全螢幕
-          className="block w-auto h-auto max-w-full max-h-[90vh] object-contain"
+          poster="/images/main.webp"
+          muted 
+          playsInline 
+          className={`block w-auto h-auto max-w-full max-h-[90vh] object-contain
+            ${playDirection === 'normal' ? 'opacity-100 z-10' : 'opacity-0 absolute top-0 left-0 z-0 pointer-events-none'}
+          `}
+        />
+
+        {/* 🎬 影片二：倒向播放影片層 */}
+        <video 
+          ref={reverseVideoRef}
+          src="/images/mainre.webm" 
+          muted 
+          playsInline 
+          preload="auto"
+          className={`block w-auto h-auto max-w-full max-h-[90vh] object-contain
+            ${playDirection === 'reverse' ? 'opacity-100 z-10' : 'opacity-0 absolute top-0 left-0 z-0 pointer-events-none'}
+          `}
         />
         
         {/* ==================== 關卡點擊熱區 ==================== */}
@@ -48,8 +101,8 @@ export default function MainGame() {
           <Link
             key={spot.id}
             href={spot.href}
-            onClick={(e) => playClickSound()} // 點擊關卡立刻響起清脆點擊聲
-            className={`absolute cursor-pointer rounded transition-all flex items-center justify-center text-center text-[10px] sm:text-xs font-bold z-10
+            onClick={(e) => playClickSound()}
+            className={`absolute cursor-pointer rounded transition-all flex items-center justify-center text-center text-[10px] sm:text-xs font-bold z-20
               ${DEV_MODE 
                 ? 'border-2 border-red-500 bg-red-500/20 text-red-200' 
                 : 'hover:bg-white/10 active:scale-95'
@@ -65,8 +118,8 @@ export default function MainGame() {
         {/* ==================== 圖片內建背包的透明熱區 ==================== */}
         <button
           onClick={(e) => {
-            e.stopPropagation(); // 阻止事件冒泡，避免點背包時重複觸發兩次聲音
-            playClickSound();    // 獨立觸發單次點擊音
+            e.stopPropagation(); 
+            playClickSound();    
             setIsBackpackOpen(true);
           }}
           className={`absolute cursor-pointer rounded-full z-20 flex items-center justify-center text-[10px] sm:text-xs font-bold
@@ -85,8 +138,6 @@ export default function MainGame() {
         {/* ==================== 背包彈出視窗 (Modal) ==================== */}
         {isBackpackOpen && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
-            
-            {/* 點擊背景關閉背包 */}
             <div 
               className="absolute inset-0 cursor-pointer" 
               onClick={(e) => {
@@ -96,9 +147,7 @@ export default function MainGame() {
               }}
             ></div>
             
-            {/* 便條紙與九宮格容器 (隨圖片大小自適應縮放) */}
             <div className="relative flex w-[85%] h-[75%] max-w-4xl max-h-[500px] rounded-2xl bg-[#eedcb3] p-6 shadow-2xl border-4 border-amber-900/40 select-none">
-              
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
@@ -130,7 +179,6 @@ export default function MainGame() {
                   </div>
                 ))}
               </div>
-
             </div>
           </div>
         )}
