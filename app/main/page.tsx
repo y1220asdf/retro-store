@@ -6,6 +6,13 @@ export default function MainGame() {
   const DEV_MODE = false; 
   const [isBackpackOpen, setIsBackpackOpen] = useState(false);
 
+  // ==================== 🔊 大廳通用點擊音效函式 ====================
+  const playClickSound = () => {
+    const audio = new Audio('/audio/click.mp3');
+    audio.volume = 0.2; // 20% 音量，當作輕柔的背景UI回饋
+    audio.play().catch((e) => console.log("音效播放被瀏覽器阻擋，等待初次互動:", e));
+  };
+
   const hotspots = [
     { id: 'lottery',  name: '1. 抽抽樂',   href: '/lottery',  style: { top: '30%', left: '44%', width: '10%', height: '31%' } },
     { id: 'candy',    name: '2. 糖果罐',   href: '/candy',    style: { top: '53%', left: '15%', width: '15%', height: '15%' } },
@@ -15,20 +22,24 @@ export default function MainGame() {
   ];
 
   return (
-    <main className="flex h-screen w-screen items-center justify-center bg-zinc-900 p-4 overflow-hidden selection:bg-transparent">
+    <main onClick={playClickSound} className="flex h-screen w-screen items-center justify-center bg-zinc-900 p-4 overflow-hidden selection:bg-transparent">
       
       {/* ========================================================
           🚀 終極修復方案：
-          不使用 background-image，改用 inline-block 容器緊緊包住圖片。
-          這樣熱區的百分比 (top/left) 就會 100% 鎖死在圖片的相對像素上，
+          不使用 background-image，改用 inline-block 容器緊緊包住影片。
+          這樣熱區的百分比 (top/left) 就會 100% 鎖死在影片的相對像素上，
           不管別人用什麼螢幕、怎麼縮放，絕對不會跑位！
       ======================================================== */}
       <div className="relative inline-block max-w-full max-h-full rounded-lg shadow-2xl overflow-hidden border border-white/10">
         
-        {/* 真實的圖片標籤：max-h-[90vh] 確保它高度不會超過螢幕 90%，背包再也不會被截掉 */}
-        <img 
-          src="/images/main.webp" 
-          alt="柑仔店主畫面" 
+        {/* 🎬 換成動態影片標籤：max-h-[90vh] 確保高度不超過螢幕 90% */}
+        <video 
+          src="/images/main.webm" 
+          poster="/images/main.webp" // 影片載入前用靜態圖墊著，防止黑畫面
+          autoPlay 
+          loop 
+          muted // 必須靜音，瀏覽器才允許自動播放
+          playsInline // 防止在手機上自動彈出全螢幕
           className="block w-auto h-auto max-w-full max-h-[90vh] object-contain"
         />
         
@@ -37,6 +48,7 @@ export default function MainGame() {
           <Link
             key={spot.id}
             href={spot.href}
+            onClick={(e) => playClickSound()} // 點擊關卡立刻響起清脆點擊聲
             className={`absolute cursor-pointer rounded transition-all flex items-center justify-center text-center text-[10px] sm:text-xs font-bold z-10
               ${DEV_MODE 
                 ? 'border-2 border-red-500 bg-red-500/20 text-red-200' 
@@ -52,15 +64,18 @@ export default function MainGame() {
 
         {/* ==================== 圖片內建背包的透明熱區 ==================== */}
         <button
-          onClick={() => setIsBackpackOpen(true)}
+          onClick={(e) => {
+            e.stopPropagation(); // 阻止事件冒泡，避免點背包時重複觸發兩次聲音
+            playClickSound();    // 獨立觸發單次點擊音
+            setIsBackpackOpen(true);
+          }}
           className={`absolute cursor-pointer rounded-full z-20 flex items-center justify-center text-[10px] sm:text-xs font-bold
             ${DEV_MODE 
               ? 'border-2 border-blue-500 bg-blue-500/30 text-blue-200' 
               : 'hover:bg-white/10 active:scale-90'
             }
           `}
-          // 這裡的數值你可以在 DEV_MODE=true 時，針對圖片右下角的背包位置再微調一次
-          style={{ top: '80%', left: '89%', width: '9%', height: '15%' }}
+          style={{ top: '80%', left: '91.5%', width: '9%', height: '15%' }}
           title="打開背包"
         >
           {DEV_MODE && <span className="bg-black/70 px-1 rounded">背包</span>}
@@ -71,13 +86,25 @@ export default function MainGame() {
         {isBackpackOpen && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in">
             
-            <div className="absolute inset-0 cursor-pointer" onClick={() => setIsBackpackOpen(false)}></div>
+            {/* 點擊背景關閉背包 */}
+            <div 
+              className="absolute inset-0 cursor-pointer" 
+              onClick={(e) => {
+                e.stopPropagation();
+                playClickSound();
+                setIsBackpackOpen(false);
+              }}
+            ></div>
             
             {/* 便條紙與九宮格容器 (隨圖片大小自適應縮放) */}
             <div className="relative flex w-[85%] h-[75%] max-w-4xl max-h-[500px] rounded-2xl bg-[#eedcb3] p-6 shadow-2xl border-4 border-amber-900/40 select-none">
               
               <button 
-                onClick={() => setIsBackpackOpen(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  playClickSound();
+                  setIsBackpackOpen(false);
+                }}
                 className="absolute top-3 right-4 text-2xl font-bold text-amber-900 hover:text-red-600 transition-colors z-10"
               >
                 ✕
