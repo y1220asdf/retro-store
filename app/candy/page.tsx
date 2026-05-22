@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function CandyGame() {
@@ -18,20 +18,49 @@ export default function CandyGame() {
 
   const CORRECT_PASSWORD = "4271";
 
-  // ==================== 🔊 音效系統 ====================
-  const playSFX = (type: 'jarDrop' | 'dial' | 'error' | 'success' | 'pickup' | 'calling') => {
-    const audioMap = {
-      jarDrop: '/audio/candydrop.mp3',
-      dial: '/audio/enternum.mp3',         
-      error: '/audio/wrongcall.mp3',       
-      success: '/audio/grandvoice.mp3',    
-      pickup: '/audio/oldphonepickup.mp3', 
-      calling: '/audio/call.mp3'           
+  // ==================== 🔊 音效系統 (手機相容優化版) ====================
+  // 使用 useRef 來儲存唯一的 Audio 實例，避免每次呼叫都重新 new Audio
+  const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
+
+  useEffect(() => {
+    // 元件載入時，將所有音效初始化好
+    audioRefs.current = {
+      jarDrop: new Audio('/audio/candydrop.mp3'),
+      dial: new Audio('/audio/enternum.mp3'),         
+      error: new Audio('/audio/wrongcall.mp3'),       
+      success: new Audio('/audio/grandvoice.mp3'),    
+      pickup: new Audio('/audio/oldphonepickup.mp3'), 
+      calling: new Audio('/audio/call.mp3')           
     };
-    
-    const audio = new Audio(audioMap[type]);
-    audio.volume = type === 'dial' ? 0.6 : 0.4;
-    audio.play().catch(e => console.log("音效播放被阻擋:", e));
+  }, []);
+
+  // 🔑 【核心解法】手機音效解鎖機制
+  // 當玩家第一次點擊電話時觸發，靜音偷播所有音效來取得瀏覽器的「播放許可」
+  const unlockAudioForMobile = () => {
+    Object.values(audioRefs.current).forEach(audio => {
+      audio.muted = true; // 先靜音，避免爆音
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.muted = false; // 偷播完後恢復正常音量設定
+        }).catch(e => console.log("音效解鎖狀態:", e));
+      }
+    });
+  };
+
+  const playSFX = (type: 'jarDrop' | 'dial' | 'error' | 'success' | 'pickup' | 'calling') => {
+    const audio = audioRefs.current[type];
+    if (!audio) return;
+
+    // 設定音量
+    if (type === 'dial') audio.volume = 0.6;
+    else if (type === 'success') audio.volume = 1.0; // 阿公聲音可以大聲一點
+    else audio.volume = 0.4;
+
+    audio.currentTime = 0;
+    audio.play().catch(e => console.log(`音效 ${type} 播放被阻擋:`, e));
 
     // 如果是通話等待音，設定 5 秒後強制停止
     if (type === 'calling') {
@@ -96,7 +125,7 @@ export default function CandyGame() {
             setIsCalling(false); 
             
             if (newPassword === CORRECT_PASSWORD) {
-              playSFX('success');
+              playSFX('success'); // 現在這行在手機上也能完美發出聲音了！
               setIsGameOver(true);
               localStorage.setItem('hasTape', 'true');
             } else {
@@ -133,6 +162,7 @@ export default function CandyGame() {
         {/* 糖果罐熱區 */}
         <button
           onClick={() => {
+            unlockAudioForMobile(); // 在這裡也加入解鎖，以防玩家先點糖果罐
             playSFX('jarDrop');
             setActiveOverlay('candy');
           }}
@@ -143,6 +173,7 @@ export default function CandyGame() {
         {/* 電話互動熱區 */}
         <button
           onClick={() => {
+            unlockAudioForMobile(); // 關鍵點：觸發解鎖機制
             playSFX('pickup');
             setActiveOverlay('phone');
           }}
