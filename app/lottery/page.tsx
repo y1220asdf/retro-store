@@ -19,17 +19,19 @@ export default function LuckyDrawGame() {
   const [flippedSet, setFlippedSet] = useState<Set<number>>(new Set());
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
 
-  // ==================== 音效架構保留，但目前停用 ====================
+  // ==================== 音效架構 ====================
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
 
   useEffect(() => {
-    // TODO: 未來音效確認後再啟用
-    // audioRefs.current = {
-    //   cardFlip: new Audio('/audio/enternum.mp3'),
-    //   error: new Audio('/audio/wrongcall.mp3'),
-    //   success: new Audio('/audio/grandvoice.mp3'),
-    //   pickup: new Audio('/audio/oldphonepickup.mp3'),
-    // };
+    // 目前只啟用「選取卡片」音效
+    audioRefs.current = {
+      cardFlip: new Audio('/audio/paper01.mp3'),
+
+      // TODO: 未來音效確認後再啟用
+      // error: new Audio('/audio/wrongcall.mp3'),
+      // success: new Audio('/audio/grandvoice.mp3'),
+      // pickup: new Audio('/audio/oldphonepickup.mp3'),
+    };
 
     const randomAnswer = Math.floor(Math.random() * TOTAL_CELLS);
     setAnswerIdx(randomAnswer);
@@ -43,6 +45,7 @@ export default function LuckyDrawGame() {
   const playSFX = (type: SFXType) => {
     const audio = audioRefs.current[type];
     if (!audio) return;
+
     audio.currentTime = 0;
     audio.play().catch(e => console.log(e));
   };
@@ -102,8 +105,8 @@ export default function LuckyDrawGame() {
     if (isGameOver || answerIdx === null) return;
     if (flippedSet.has(idx)) return;
 
-    // TODO: 未來音效確認後再啟用
-    // playSFX('cardFlip');
+    // 每次選取卡片時播放 paper01.mp3
+    playSFX('cardFlip');
 
     const newFlipped = new Set(flippedSet);
     newFlipped.add(idx);
@@ -172,7 +175,7 @@ export default function LuckyDrawGame() {
           <div
             className="absolute grid p-[0.5%]"
             style={{
-              top: '30.8%', // 原本 32.6%，數字越小卡片越往上
+              top: '30.8%',
               left: '6.2%',
               width: '87.6%',
               height: '62.0%',
