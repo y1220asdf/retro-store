@@ -1,223 +1,299 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
-interface Candy {
-  id: number;
-  color: 'red' | 'yellow' | 'green' | 'blue';
-  style: { top: string; left: string; width: string; height: string };
-}
+// 🎯 橫向 5 格，縱向 4 格
+const COLS = 5;
+const ROWS = 4;
+const TOTAL_CELLS = COLS * ROWS;
 
-export default function CandyGame() {
+type Direction = 'up' | 'down' | 'left' | 'right';
+type SFXType = 'cardFlip' | 'error' | 'success' | 'pickup';
+
+export default function LuckyDrawGame() {
   const router = useRouter();
 
   // ==================== 遊戲狀態管理 ====================
-  const [activeOverlay, setActiveOverlay] = useState<'none' | 'phone'>('none');
-  const [inputPassword, setInputPassword] = useState<string>(''); // 玩家撥號紀錄
+  const [answerIdx, setAnswerIdx] = useState<number | null>(null);
+  const [flippedSet, setFlippedSet] = useState<Set<number>>(new Set());
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
-  
-  // 讓玩家在畫面上實體清點的軟糖數量狀態
-  const [candyCounts, setCandyCounts] = useState({ red: 0, yellow: 0, green: 0, blue: 0 });
 
-  const CORRECT_PASSWORD = "4271"; // 🎯 正確軟糖密碼
+  // ==================== 音效架構保留，但目前停用 ====================
+  const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
 
-  // ==================== 實體軟糖位置鋪設 (對應罐子範圍) ====================
-  // 在糖果罐的位置上，散落放置 4+2+7+1 = 14 顆可點擊計數的半透明糖果熱區
-  const interactiveCandies: Candy[] = [
-    // 紅色 4 顆
-    { id: 1, color: 'red', style: { top: '35%', left: '30%', width: '3%', height: '5%' } },
-    { id: 2, color: 'red', style: { top: '45%', left: '28%', width: '3%', height: '5%' } },
-    { id: 3, color: 'red', style: { top: '55%', left: '33%', width: '3%', height: '5%' } },
-    { id: 4, color: 'red', style: { top: '65%', left: '31%', width: '3%', height: '5%' } },
-    // 黃色 2 顆
-    { id: 5, color: 'yellow', style: { top: '40%', left: '34%', width: '3%', height: '5%' } },
-    { id: 6, color: 'yellow', style: { top: '60%', left: '27%', width: '3%', height: '5%' } },
-    // 綠色 7 顆
-    { id: 7, color: 'green', style: { top: '38%', left: '27%', width: '3%', height: '5%' } },
-    { id: 8, color: 'green', style: { top: '48%', left: '32%', width: '3%', height: '5%' } },
-    { id: 9, color: 'green', style: { top: '50%', left: '36%', width: '3%', height: '5%' } },
-    { id: 10, color: 'green', style: { top: '58%', left: '30%', width: '3%', height: '5%' } },
-    { id: 11, color: 'green', style: { top: '68%', left: '34%', width: '3%', height: '5%' } },
-    { id: 12, color: 'green', style: { top: '52%', left: '29%', width: '3%', height: '5%' } },
-    { id: 13, color: 'green', style: { top: '43%', left: '36%', width: '3%', height: '5%' } },
-    // 藍色 1 顆
-    { id: 14, color: 'blue', style: { top: '55%', left: '35%', width: '3%', height: '5%' } },
-  ];
+  useEffect(() => {
+    // TODO: 未來音效確認後再啟用
+    // audioRefs.current = {
+    //   cardFlip: new Audio('/audio/enternum.mp3'),
+    //   error: new Audio('/audio/wrongcall.mp3'),
+    //   success: new Audio('/audio/grandvoice.mp3'),
+    //   pickup: new Audio('/audio/oldphonepickup.mp3'),
+    // };
 
-  // 點擊軟糖時數量 +1
-  const handleCandyClick = (color: 'red' | 'yellow' | 'green' | 'blue') => {
-    setCandyCounts(prev => ({
-      ...prev,
-      [color]: prev[color] + 1
-    }));
+    const randomAnswer = Math.floor(Math.random() * TOTAL_CELLS);
+    setAnswerIdx(randomAnswer);
+
+    console.log("時光柑仔店神秘藏寶格號碼 (0~19):", randomAnswer);
+
+    // TODO: 未來音效確認後再啟用
+    // setTimeout(() => playSFX('pickup'), 300);
+  }, []);
+
+  const playSFX = (type: SFXType) => {
+    const audio = audioRefs.current[type];
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(e => console.log(e));
   };
 
-  // ==================== 復古轉盤撥號處理 ====================
-  const handleDialNumber = (num: number) => {
-    if (isGameOver || inputPassword.length >= 4) return;
-    
-    const newPassword = inputPassword + num;
-    setInputPassword(newPassword);
+  // ==================== 📐 正確的方向判斷邏輯 ====================
+  const getRowCol = (idx: number) => {
+    return {
+      row: Math.floor(idx / COLS),
+      col: idx % COLS,
+    };
+  };
 
-    // 輸滿 4 位數時自動驗證
-    if (newPassword.length === 4) {
-      if (newPassword === CORRECT_PASSWORD) {
+  const getArrowDirection = (idx: number): Direction => {
+    if (answerIdx === null) return 'down';
+
+    const current = getRowCol(idx);
+    const answer = getRowCol(answerIdx);
+
+    const rowDiff = answer.row - current.row;
+    const colDiff = answer.col - current.col;
+
+    // 同一列：只能往左或右
+    if (rowDiff === 0) {
+      return colDiff > 0 ? 'right' : 'left';
+    }
+
+    // 同一欄：只能往上或下
+    if (colDiff === 0) {
+      return rowDiff > 0 ? 'down' : 'up';
+    }
+
+    // 斜方向：指向距離較大的方向
+    if (Math.abs(rowDiff) > Math.abs(colDiff)) {
+      return rowDiff > 0 ? 'down' : 'up';
+    }
+
+    return colDiff > 0 ? 'right' : 'left';
+  };
+
+  // ==================== 🖼️ 圖片箭頭角度 ====================
+  // 假設 lottery_arrow.png 原圖是「朝右」
+  const getArrowRotation = (idx: number): number => {
+    const dir = getArrowDirection(idx);
+
+    const rotationMap: Record<Direction, number> = {
+      right: 0,
+      down: 90,
+      left: 180,
+      up: 270,
+    };
+
+    return rotationMap[dir];
+  };
+
+  // ==================== 🖱️ 點擊處理 ====================
+  const handleCardClick = (idx: number) => {
+    if (isGameOver || answerIdx === null) return;
+    if (flippedSet.has(idx)) return;
+
+    // TODO: 未來音效確認後再啟用
+    // playSFX('cardFlip');
+
+    const newFlipped = new Set(flippedSet);
+    newFlipped.add(idx);
+    setFlippedSet(newFlipped);
+
+    if (idx === answerIdx) {
+      setTimeout(() => {
+        // TODO: 未來音效確認後再啟用
+        // playSFX('success');
+
         setIsGameOver(true);
-        localStorage.setItem('hasTape', 'true'); // 存入通關道具
-      } else {
-        // 錯誤的話，等待一秒讓玩家看清楚輸入內容，然後重置
-        setTimeout(() => {
-          setInputPassword('');
-        }, 1200);
-      }
+        localStorage.setItem('hasPhoto', 'true');
+      }, 500);
+    } else {
+      // TODO: 未來音效確認後再啟用
+      // setTimeout(() => {
+      //   playSFX('error');
+      // }, 400);
     }
   };
 
-  // 定義轉盤上各個數字孔洞的角度位置 (讓視覺更像真實轉盤)
-  const dialAngles = [150, 30, 60, 90, 120, 150, 180, 210, 240, 270]; // 0-9 的分佈角度
-
   return (
     <main className="flex h-screen w-screen items-center justify-center bg-zinc-950 p-4 overflow-hidden selection:bg-transparent">
-      
-      {/* 16:9 自適應遊戲外框，確保所有點擊熱區絕對不跑位 */}
-      <div className="relative inline-block max-w-full max-h-full rounded-xl shadow-2xl overflow-hidden border border-white/10">
-        
-        {/* 背景圖：糖果罐與電話近景 */}
-        <img 
-          src="/images/candybg.webp" 
-          alt="玻璃糖果罐與電話近景" 
-          className="block w-auto h-auto max-w-full max-h-[90vh] object-contain"
-        />
+      {/* 16:9 比例遊戲主視窗外殼 */}
+      <div className="relative inline-block w-full max-w-5xl aspect-video rounded-xl shadow-2xl bg-zinc-900 border border-white/10 overflow-hidden">
 
-        {/* ⬅ 返回主導覽按鈕 */}
-        <button
-          onClick={() => router.push('/main')}
-          className="absolute top-4 left-4 z-20 flex items-center justify-center rounded-full border border-amber-900/40 bg-amber-50/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm transition-all hover:bg-amber-100 active:scale-95 shadow-md"
-        >
-          ⬅ 返回柑仔店耶耶耶
-        </button>
-
-        {/* ==================== 實體互動：糖果罐點擊數數系統 ==================== */}
-        {interactiveCandies.map((candy) => (
-          <button
-            key={candy.id}
-            onClick={() => handleCandyClick(candy.color)}
-            style={candy.style}
-            className={`absolute z-10 rounded-full cursor-pointer transition-all duration-150 active:scale-75
-              ${candy.color === 'red' ? 'bg-red-500/10 hover:bg-red-500/40' : ''}
-              ${candy.color === 'yellow' ? 'bg-yellow-500/10 hover:bg-yellow-500/40' : ''}
-              ${candy.color === 'green' ? 'bg-green-500/10 hover:bg-green-500/40' : ''}
-              ${candy.color === 'blue' ? 'bg-blue-500/10 hover:bg-blue-500/40' : ''}
-            `}
-            title={`點擊清點${candy.color}色軟糖`}
+        {/* 最底層場景背景 */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
+          <img
+            src="/images/lottery_background.png"
+            alt="場景背景"
+            className="w-full h-full object-cover opacity-90"
           />
-        ))}
-
-        {/* 畫面中央下方：動態計數便利貼，讓玩家知道自己數到哪了 */}
-        <div className="absolute bottom-[4%] left-[15%] bg-[#fffde6] px-4 py-2 rounded shadow-md border border-amber-200/60 font-serif text-xs sm:text-sm flex gap-4 text-amber-900 font-bold pointer-events-none select-none">
-          <span className="text-red-600">紅: {candyCounts.red}</span>
-          <span className="text-amber-600">黃: {candyCounts.yellow}</span>
-          <span className="text-green-700">綠: {candyCounts.green}</span>
-          <span className="text-blue-600">藍: {candyCounts.blue}</span>
-          <button 
-            onClick={(e) => { e.stopPropagation(); setCandyCounts({ red: 0, yellow: 0, green: 0, blue: 0 }); }}
-            className="pointer-events-auto text-[10px] bg-amber-800 text-white px-1 rounded hover:bg-amber-900 active:scale-90 ml-1"
-          >
-            重置
-          </button>
         </div>
 
-
-        {/* ==================== 點擊進入電話大轉盤熱區 ==================== */}
+        {/* 返回鍵 */}
         <button
-          onClick={() => setActiveOverlay('phone')}
-          className="absolute top-[35%] left-[48%] w-[30%] h-[40%] cursor-pointer rounded-full transition-colors hover:bg-white/10 z-10"
-          title="拿起話筒撥號"
-        />
+          onClick={() => router.push('/main')}
+          className="absolute top-4 left-4 z-40 flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)]"
+        >
+          ⬅ 返回柑仔店
+        </button>
 
+        {/* ==================== 🏮 掛軸容器：位置不動 ==================== */}
+        <div
+          className="absolute inset-y-0 left-1/2 -translate-x-1/2 h-[94%] my-auto z-20 flex items-center justify-center"
+          style={{ perspective: '1200px' }}
+        >
+          {/* 去背抽抽樂掛軸實體底圖：輕微互動 */}
+          <motion.img
+            src="/images/lottery_back.png"
+            alt="抽抽樂機關掛軸"
+            className="h-full w-auto object-contain pointer-events-auto z-10"
+            whileHover={{
+              scale: 1.008,
+              filter: 'brightness(1.03) drop-shadow(0 0 6px rgba(255, 220, 150, 0.25))',
+            }}
+            transition={{
+              type: 'spring',
+              stiffness: 160,
+              damping: 22,
+            }}
+          />
 
-        {/* ==================== 🛠️ 擬真老式復古電話轉盤彈窗 ==================== */}
-        {activeOverlay === 'phone' && (
-          <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/75 backdrop-blur-sm animate-fade-in">
-            <div className="absolute inset-0 cursor-pointer" onClick={() => setActiveOverlay('none')}></div>
-            
-            {/* 擬真古典電話外殼面板 (限縮高度尺寸，絕不溢出) */}
-            <div className="relative bg-gradient-to-b from-emerald-900 to-emerald-950 p-6 rounded-full border-4 border-emerald-800/80 w-[80%] max-w-[340px] aspect-square flex flex-col items-center justify-center shadow-2xl text-white select-none">
-              
-              {/* 關閉電話 */}
-              <button onClick={() => setActiveOverlay('none')} className="absolute -top-2 right-4 text-2xl font-bold text-emerald-200 hover:text-white transition-colors">✕</button>
-              
-              {/* 目前撥號顯示小視窗 */}
-              <div className="absolute top-[12%] w-[55%] bg-black/60 border border-emerald-800 rounded px-2 py-1 text-center font-mono text-lg text-emerald-400 tracking-[0.3em] h-8 flex items-center justify-center">
-                {inputPassword.split('').map(() => '• ')}
-                {inputPassword.length === 4 && inputPassword !== CORRECT_PASSWORD && (
-                  <span className="text-red-500 text-xs tracking-normal animate-pulse">重撥中</span>
-                )}
-              </div>
+          {/* ==================== 🎯 卡片網格：只有這層往上移 ==================== */}
+          <div
+            className="absolute grid p-[0.5%]"
+            style={{
+              top: '30.8%', // 原本 32.6%，數字越小卡片越往上
+              left: '6.2%',
+              width: '87.6%',
+              height: '62.0%',
+              zIndex: 30,
+              gridTemplateColumns: `repeat(${COLS}, minmax(0, 1fr))`,
+              gridTemplateRows: `repeat(${ROWS}, minmax(0, 1fr))`,
+              columnGap: '1.4%',
+              rowGap: '1.6%',
+            }}
+          >
+            {Array.from({ length: TOTAL_CELLS }).map((_, i) => {
+              const isFlipped = flippedSet.has(i);
+              const isAns = i === answerIdx;
 
-              {/* 🔮 核心古典轉盤圓盤 */}
-              <div className="relative w-[75%] aspect-square rounded-full bg-emerald-800/40 border-4 border-emerald-600/60 shadow-inner flex items-center justify-center group">
-                
-                {/* 轉盤中心點：復古老金屬蓋 */}
-                <div className="w-[30%] aspect-square rounded-full bg-gradient-to-tr from-amber-600 to-amber-200 border-2 border-amber-700 shadow-md flex items-center justify-center z-20">
-                  <span className="text-[10px] text-amber-900 font-bold font-serif scale-90">TAIWAN</span>
-                </div>
+              return (
+                <motion.div
+                  key={i}
+                  className="relative w-full h-full select-none cursor-pointer overflow-visible"
+                  onClick={() => handleCardClick(i)}
+                  whileHover={
+                    !isFlipped && !isGameOver
+                      ? {
+                          scale: 1.08,
+                          y: -4,
+                          filter: 'drop-shadow(0 0 12px rgba(255, 215, 130, 0.85))',
+                        }
+                      : {}
+                  }
+                  whileTap={
+                    !isFlipped && !isGameOver
+                      ? {
+                          scale: 0.96,
+                        }
+                      : {}
+                  }
+                  transition={{
+                    type: 'spring',
+                    stiffness: 320,
+                    damping: 18,
+                  }}
+                  style={{
+                    zIndex: !isFlipped ? 2 : 1,
+                  }}
+                >
+                  <motion.div
+                    className="w-full h-full relative"
+                    animate={{ rotateY: isFlipped ? 180 : 0 }}
+                    transition={{ duration: 0.45, ease: "easeInOut" }}
+                    style={{ transformStyle: 'preserve-3d' }}
+                  >
+                    {/* 【卡片正面】：lottery_card.png */}
+                    <div
+                      className="absolute inset-0 bg-cover bg-center rounded-sm"
+                      style={{
+                        backfaceVisibility: 'hidden',
+                        backgroundImage: 'url(/images/lottery_card.png)',
+                        WebkitBackfaceVisibility: 'hidden',
+                      }}
+                    />
 
-                {/* 圍繞在周圍的 0-9 數字撥號孔洞 */}
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((num, idx) => {
-                  // 計算每一個圓圈孔洞的數學幾何角度座標位置
-                  const angle = (idx * 30) + 40; 
-                  const radius = 68; // 孔洞中心離原點的距離 (px)
-                  const x = Math.cos((angle * Math.PI) / 180) * radius;
-                  const y = Math.sin((angle * Math.PI) / 180) * radius;
-
-                  return (
-                    <button
-                      key={num}
-                      onClick={() => handleDialNumber(num)}
-                      style={{ transform: `translate(${x}px, ${y}px)` }}
-                      className="absolute w-[22%] aspect-square rounded-full bg-amber-50 text-emerald-950 font-mono font-black text-sm sm:text-base border border-amber-300 shadow-md flex items-center justify-center transition-all hover:bg-amber-200 active:scale-75 active:bg-amber-400 z-10"
+                    {/* 【卡片背面】 */}
+                    <div
+                      className="absolute inset-0 bg-[#fffdf9] border border-amber-900/10 flex flex-col items-center justify-center rounded-sm overflow-hidden"
+                      style={{
+                        backfaceVisibility: 'hidden',
+                        transform: 'rotateY(180deg)',
+                        WebkitBackfaceVisibility: 'hidden',
+                      }}
                     >
-                      {num}
-                    </button>
-                  );
-                })}
-
-                {/* 撥號限制金屬擋片 (視覺裝飾，讓轉盤更逼真) */}
-                <div className="absolute bottom-[10%] right-[12%] w-2 h-6 bg-amber-400/80 rounded-sm transform rotate-45 z-10 shadow-sm" />
-              </div>
-
-              <span className="absolute bottom-[8%] text-[10px] text-emerald-300/60 font-serif tracking-wider">依序點擊孔洞進行撥號</span>
-            </div>
+                      {isAns ? (
+                        /* 答案格：露出藏在後面的老照片 */
+                        <div
+                          className="w-full h-full bg-cover bg-center animate-fade-in"
+                          style={{ backgroundImage: 'url(/images/resolved_photo.png)' }}
+                        />
+                      ) : (
+                        /* 非答案格：使用 lottery_arrow.png */
+                        <div className="w-full h-full flex items-center justify-center p-2 animate-fade-in">
+                          <img
+                            src="/images/lottery_arrow.png"
+                            alt="方向提示"
+                            className="w-[72%] h-[72%] object-contain transition-transform duration-300 pointer-events-none"
+                            style={{ transform: `rotate(${getArrowRotation(i)}deg)` }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
+                </motion.div>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-
-        {/* ==================== 彈出視窗：成功通關彈窗 ==================== */}
+        {/* ==================== 📸 通關老照片放大彈窗 ==================== */}
         {isGameOver && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/85 backdrop-blur-md animate-fade-in select-none">
-            
-            <div className="bg-amber-50 p-6 sm:p-8 rounded-2xl border-4 border-amber-800 max-w-sm w-[85%] text-center shadow-2xl flex flex-col items-center">
-              <span className="text-4xl mb-1 animate-bounce">🎉</span>
-              <h2 className="text-xl sm:text-2xl font-bold text-amber-900 font-serif mb-1">解謎成功！</h2>
-              <p className="text-xs text-green-700 font-bold mb-5">伴隨著喀噠聲，電話那頭傳來了阿嬤令人懷念的聲音...</p>
-              
-              <div className="w-32 aspect-[1.4/1] bg-amber-900/10 rounded-xl border-2 border-dashed border-amber-800/40 flex flex-col items-center justify-center p-3 mb-5 shadow-inner">
-                <span className="text-3xl mb-1">📼</span>
-                <span className="text-xs font-bold text-amber-900 font-serif">錄音帶 (回憶碎片)</span>
+          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in select-none">
+            <div className="bg-[#fffdf0] p-6 rounded-2xl border-4 border-amber-900 max-w-md w-[90%] text-center shadow-[0_0_50px_rgba(180,100,0,0.4)] flex flex-col items-center">
+              <span className="text-4xl mb-2 animate-bounce">✨</span>
+              <h2 className="text-xl font-black text-amber-950 font-serif mb-1">尋回重要記憶！</h2>
+              <p className="text-xs text-emerald-800 font-bold mb-4 leading-relaxed">
+                伴隨著紙張撕開的清脆聲，妳終於找到了藏在背後的阿公阿嬤創店照片！
+              </p>
+
+              <div className="relative w-full aspect-[4/3] bg-zinc-200 rounded-lg border-4 border-white shadow-xl overflow-hidden mb-5 transform rotate-1">
+                <img
+                  src="/images/resolved_photo.png"
+                  alt="阿公阿嬤創店合照"
+                  className="w-full h-full object-cover"
+                />
               </div>
 
               <button
                 onClick={() => router.push('/main')}
-                className="w-full py-2.5 rounded-xl bg-amber-800 text-white text-sm font-bold tracking-wider shadow-md transition-all hover:bg-amber-900 active:scale-95"
+                className="w-full py-3 rounded-xl bg-amber-900 text-amber-50 text-base font-bold tracking-widest shadow-md transition-all hover:bg-amber-950 active:scale-95"
               >
-                收進背包並回到柑仔店
+                收進背包並回到大廳
               </button>
             </div>
-
           </div>
         )}
-
       </div>
     </main>
   );
