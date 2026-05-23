@@ -83,7 +83,7 @@ export default function Intro() {
         return (
           <img
             key={num}
-            src={`/images/${num}.png`} 
+            src={`/images/${num}.webp`} 
             alt={`Story part ${num}`}
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out ${
               step >= activeStep && step < 7 ? 'opacity-100' : 'opacity-0'
