@@ -21,6 +21,7 @@ export default function CandyGame() {
   // ==================== 🔊 音效系統 (手機相容優化版) ====================
   // 使用 useRef 來儲存唯一的 Audio 實例，避免每次呼叫都重新 new Audio
   const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
+  const isAudioUnlocked = useRef<boolean>(false);
 
   useEffect(() => {
     // 元件載入時，將所有音效初始化好
@@ -35,9 +36,13 @@ export default function CandyGame() {
   }, []);
 
   // 🔑 【核心解法】手機音效解鎖機制
-  // 當玩家第一次點擊電話時觸發，靜音偷播所有音效來取得瀏覽器的「播放許可」
-  const unlockAudioForMobile = () => {
-    Object.values(audioRefs.current).forEach(audio => {
+  const unlockAudioForMobile = (excludeType?: string) => {
+    if (isAudioUnlocked.current) return;
+    isAudioUnlocked.current = true;
+
+    Object.entries(audioRefs.current).forEach(([key, audio]) => {
+      if (key === excludeType) return;
+      
       audio.muted = true; // 先靜音，避免爆音
       const playPromise = audio.play();
       if (playPromise !== undefined) {
@@ -125,7 +130,7 @@ export default function CandyGame() {
             setIsCalling(false); 
             
             if (newPassword === CORRECT_PASSWORD) {
-              playSFX('success'); // 現在這行在手機上也能完美發出聲音了！
+              playSFX('success'); 
               setIsGameOver(true);
               localStorage.setItem('hasTape', 'true');
             } else {
@@ -162,7 +167,7 @@ export default function CandyGame() {
         {/* 糖果罐熱區 */}
         <button
           onClick={() => {
-            unlockAudioForMobile(); // 在這裡也加入解鎖，以防玩家先點糖果罐
+            unlockAudioForMobile('jarDrop'); 
             playSFX('jarDrop');
             setActiveOverlay('candy');
           }}
@@ -173,7 +178,7 @@ export default function CandyGame() {
         {/* 電話互動熱區 */}
         <button
           onClick={() => {
-            unlockAudioForMobile(); // 關鍵點：觸發解鎖機制
+            unlockAudioForMobile('pickup'); 
             playSFX('pickup');
             setActiveOverlay('phone');
           }}
