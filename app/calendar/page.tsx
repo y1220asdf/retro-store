@@ -192,7 +192,7 @@ export default function CalendarPuzzle() {
                   key={piece.id}
                   onClick={() => handlePieceClick(index)}
                   className="relative w-full h-full select-none cursor-pointer rounded-lg overflow-hidden"
-                  // 依要求：被選取的碎片微微放大、帶有白邊
+                  // 被選取的碎片微微放大、帶有白邊
                   animate={{
                     scale: isSelected ? 1.05 : 1,
                     boxShadow: isSelected 
@@ -204,11 +204,11 @@ export default function CalendarPuzzle() {
                   whileTap={!isGameOver ? { scale: 0.98 } : {}}
                   transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 >
-                  {/* 12張獨立碎片圖片命名規範：calendar_piece_0.webp 到 calendar_piece_11.webp */}
+                  {/* 12張獨立碎片圖片命名規範*/}
                   <img
                     src={`/images/calendar_piece_${piece.id}.png`}
                     alt={`日曆碎片-${piece.id}`}
-                    className="w-full h-full object-cover pointer-events-none"
+                    className="w-full h-full object-cover pointer-events-none sepia-50 brightness-70 contrast-120 hue-rotate-30 saturate-140"
                   />
                   
                   {/* 覆蓋一層淡淡的邊框讓結構更清晰 */}
