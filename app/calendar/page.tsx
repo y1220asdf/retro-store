@@ -120,14 +120,26 @@ export default function CalendarPuzzle() {
   // ==================== 🏆 勝利檢查邏輯 ====================
   const checkWinCondition = (currentPieces: PuzzlePiece[]) => {
     const win = currentPieces.every((piece, index) => piece.id === index);
+    
     if (win) {
+      // 1. 拼對的瞬間，立刻清空選取框，讓玩家看清楚完整無白邊的日曆
+      setSelectedIdx(null);
+  
+      // 2. 使用 setTimeout 設定延遲，這裡設定 2000 毫秒 (即 2 秒)
+      // 你可以依感覺調整：1500 (1.5秒) 或 2500 (2.5秒)
       setTimeout(() => {
+        // 播放通關音效
         playSFX('success');
-        setIsGameOver(true);
-        // 寫入 localStorage 讓天秤關卡（ScaleGame）可以順利遊玩
+        
+        // 這一行 true 之後，畫面上才會跑出你提供的那個「通關彈窗」
+        setIsGameOver(true); 
+        
+        // 寫入 localStorage 狀態
         localStorage.setItem('hasRecipe', 'true');
-        localStorage.setItem('hasPhoto', 'true'); // 流程圖中的回憶相片
-      }, 400);
+        localStorage.setItem('hasPhoto', 'true');
+        
+        console.log("遊戲結束，已獲得紅豆秘方與相片");
+      }, 2000); // 👈 停留時間改這裡 (1000 = 1秒)
     }
   };
 
@@ -194,7 +206,7 @@ export default function CalendarPuzzle() {
                 >
                   {/* 12張獨立碎片圖片命名規範：calendar_piece_0.webp 到 calendar_piece_11.webp */}
                   <img
-                    src={`/images/calendar_piece_${piece.id}.webp`}
+                    src={`/images/calendar_piece_${piece.id}.png`}
                     alt={`日曆碎片-${piece.id}`}
                     className="w-full h-full object-cover pointer-events-none"
                   />
