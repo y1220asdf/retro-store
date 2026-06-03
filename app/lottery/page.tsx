@@ -136,7 +136,7 @@ export default function LuckyDrawGame() {
         {/* 最底層場景背景 */}
         <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
           <img
-            src="/images/lottery_background.png"
+            src="/images/lottery_background.webp"
             alt="場景背景"
             className="w-full h-full object-cover opacity-90"
           />
@@ -157,7 +157,7 @@ export default function LuckyDrawGame() {
         >
           {/* 去背抽抽樂掛軸實體底圖：輕微互動 */}
           <motion.img
-            src="/images/lottery_back.png"
+            src="/images/lottery_back.webp"
             alt="抽抽樂機關掛軸"
             className="h-full w-auto object-contain pointer-events-auto z-10"
             whileHover={{
@@ -231,7 +231,7 @@ export default function LuckyDrawGame() {
                       className="absolute inset-0 bg-cover bg-center rounded-sm"
                       style={{
                         backfaceVisibility: 'hidden',
-                        backgroundImage: 'url(/images/lottery_card.png)',
+                        backgroundImage: 'url(/images/lottery_card.webp)',
                         WebkitBackfaceVisibility: 'hidden',
                       }}
                     />
@@ -255,7 +255,7 @@ export default function LuckyDrawGame() {
                         /* 非答案格：使用 lottery_arrow.png */
                         <div className="w-full h-full flex items-center justify-center p-2 animate-fade-in">
                           <img
-                            src="/images/lottery_arrow.png"
+                            src="/images/lottery_arrow.webp"
                             alt="方向提示"
                             className="w-[72%] h-[72%] object-contain transition-transform duration-300 pointer-events-none"
                             style={{ transform: `rotate(${getArrowRotation(i)}deg)` }}
