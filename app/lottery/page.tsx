@@ -278,7 +278,7 @@ export default function LuckyDrawGame() {
               <span className="text-4xl mb-2 animate-bounce">✨</span>
               <h2 className="text-xl font-black text-amber-950 font-serif mb-1">尋回重要記憶！</h2>
               <p className="text-xs text-emerald-800 font-bold mb-4 leading-relaxed">
-                伴隨著紙張撕開的清脆聲，妳終於找到了藏在背後的阿公阿嬤創店照片！
+                伴隨著紙張撕開的清脆聲，妳終於找到了藏在背後的照片！
               </p>
 
               <div className="relative w-full aspect-[4/3] bg-zinc-200 rounded-lg border-4 border-white shadow-xl overflow-hidden mb-5 transform rotate-1">
