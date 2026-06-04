@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// ✅ 預先定義資料的型別
 type StoryStep = {
   type: string;
   duration: number;
@@ -11,31 +10,29 @@ type StoryStep = {
   text?: string;
 };
 
-// ✅ 移到元件外部，避免每次 render 重建，防止 useEffect 依賴不穩定
 const storySteps: StoryStep[] = [
   { type: "image", src: "/images/0.webp",   duration: 1600 },
-  { type: "image", src: "/images/1.1.webp", duration: 650  },
-  { type: "image", src: "/images/1.2.webp", duration: 650  },
-  { type: "image", src: "/images/1.3.webp", duration: 900  },
-  { type: "image", src: "/images/2.1.webp", duration: 750  },
-  { type: "image", src: "/images/2.2.webp", duration: 750  },
+  { type: "image", src: "/images/1.1.webp", duration: 750  },
+  { type: "image", src: "/images/1.2.webp", duration: 750  },
+  { type: "image", src: "/images/1.3.webp", duration: 950  },
+  { type: "image", src: "/images/2.1.webp", duration: 950  },
+  { type: "image", src: "/images/2.2.webp", duration: 950  },
   { type: "image", src: "/images/2.3.webp", duration: 1300 },
   { type: "image", src: "/images/3.1.webp", duration: 2600 },
-  { type: "text",  text: "20年後",          duration: 3600 },
+  { type: "text",  text: "20年後......",          duration: 4000 },
   { type: "image", src: "/images/4.1.webp", duration: 2400 },
   { type: "image", src: "/images/4.2.webp", duration: 2400 },
   { type: "image", src: "/images/5.1.webp", duration: 2500 },
-  { type: "image", src: "/images/6.1.webp", duration: 420  },
-  { type: "image", src: "/images/6.2.webp", duration: 420  },
+  { type: "image", src: "/images/6.1.webp", duration: 520  },
+  { type: "image", src: "/images/6.2.webp", duration: 520  },
   { type: "image", src: "/images/6.3.webp", duration: 1100 },
   { type: "image", src: "/images/7.1.webp", duration: 2300 },
-  { type: "image", src: "/images/8.1.webp", duration: 650  },
-  { type: "image", src: "/images/8.2.webp", duration: 650  },
+  { type: "image", src: "/images/8.1.webp", duration: 850  },
+  { type: "image", src: "/images/8.2.webp", duration: 850  },
   { type: "image", src: "/images/8.3.webp", duration: 1300 },
   { type: "text",  text: "這時的你決定進入柑仔店一探究竟\n找回阿公的回憶碎片...", duration: 4300 },
 ];
 
-// ✅ 預先計算，避免在元件內重複運算
 const uniqueSrcs = [...new Set(
   storySteps
     .filter((s) => s.type === "image" && s.src)
@@ -44,34 +41,48 @@ const uniqueSrcs = [...new Set(
 
 const finalStepIndex = storySteps.length - 1;
 
+// ── crossfade 時間 ─────────────────────────────────────────
+function getFadeDuration(s: StoryStep | undefined) {
+  if (!s || s.type === "text") return 800;
+  if (s.duration <= 500)  return 80;
+  if (s.duration <= 1200) return 250;
+  return 600;
+}
+
 export default function Intro() {
   const router = useRouter();
   const [step, setStep] = useState(0);
+  const [prevSrc, setPrevSrc] = useState<string | undefined>(undefined);
   const [typedText, setTypedText] = useState("");
   const [transitioning, setTransitioning] = useState(false);
 
   const currentStep = storySteps[step] ?? storySteps[finalStepIndex];
+  const currentSrc  = currentStep?.type === "image" ? currentStep.src : undefined;
+  const isText      = currentStep?.type === "text";
+  const fadeDuration = getFadeDuration(currentStep);
 
   // ── 主計時器 ──────────────────────────────────────────────
   useEffect(() => {
     if (step >= storySteps.length) {
       setTransitioning(true);
-      const enterTimer = setTimeout(() => {
-        router.push("/main");
-      }, 2200);
-      return () => clearTimeout(enterTimer);
+      const t = setTimeout(() => router.push("/main"), 2200);
+      return () => clearTimeout(t);
     }
 
-    const timer = setTimeout(() => {
-      setStep((prev) => prev + 1);
+    const t = setTimeout(() => {
+      // ✅ step 推進前同步記下當前圖為 prev，下一 render 兩層同時就位
+      const leaving = storySteps[step];
+      if (leaving?.type === "image" && leaving.src) {
+        setPrevSrc(leaving.src);
+      }
+      setStep((s) => s + 1);
     }, currentStep.duration);
 
-    return () => clearTimeout(timer);
-  }, [step, router]); // ✅ currentStep.duration 透過 step 間接決定，不需列入依賴
+    return () => clearTimeout(t);
+  }, [step, router]);
 
   // ── 打字機 ────────────────────────────────────────────────
   useEffect(() => {
-    // ✅ 只依賴 step，避免 currentStep reference 不穩定導致重複觸發
     const s = storySteps[step];
     if (s?.type !== "text" || !s.text) return;
 
@@ -86,40 +97,50 @@ export default function Intro() {
     }, 130);
 
     return () => clearInterval(id);
-  }, [step]); // ✅ 只依賴 step
-
-  // ── crossfade 時間 ────────────────────────────────────────
-  const getFadeDuration = (s: StoryStep | undefined) => {
-    if (!s || s.type === "text") return 800;
-    if (!s.duration) return 800;
-    if (s.duration <= 500)  return 80;
-    if (s.duration <= 1200) return 250;
-    return 600;
-  };
-
-  const fadeDuration = getFadeDuration(currentStep);
-  const isText = currentStep?.type === "text";
+  }, [step]);
 
   const handleSkip = () => setStep(storySteps.length);
 
   return (
     <main className="relative flex h-screen w-screen items-center justify-center bg-black overflow-hidden">
 
-      {uniqueSrcs.map((src, index) => (
-        <Image
-          key={src}
-          src={src}
-          alt=""
-          fill
-          priority={index < 5}
-          className="object-cover"
-          style={{
-            opacity: !isText && !transitioning && currentStep?.src === src ? 1 : 0,
-            transition: `opacity ${fadeDuration}ms ease-in-out`,
-            willChange: "opacity",
-          }}
-        />
-      ))}
+      {/*
+        ── 圖片層：真正的 cross-dissolve ───────────────────────
+        每張圖永遠 render，用 zIndex + opacity 控制：
+          - currentSrc  → z:2, opacity:1（帶 transition 淡入）
+          - prevSrc     → z:1, opacity:1（不帶 transition，原地墊住）
+          - 其他        → z:0, opacity:0
+        新圖淡入時，舊圖靜靜墊在下面，黑底永遠不會露出來。
+      */}
+      {uniqueSrcs.map((src) => {
+        const isCurrent = !isText && !transitioning && currentSrc === src;
+        const isPrev    = !isText && !transitioning && prevSrc === src && currentSrc !== src;
+
+        let opacity = 0;
+        let zIndex  = 0;
+        let transition = "none";
+
+        if (isCurrent) {
+          opacity    = 1;
+          zIndex     = 2;
+          transition = `opacity ${fadeDuration}ms ease-in-out`;
+        } else if (isPrev) {
+          opacity    = 1;   // 靜止墊底，不加 transition
+          zIndex     = 1;
+          transition = "none";
+        }
+
+        return (
+          <Image
+            key={src}
+            src={src}
+            alt=""
+            fill
+            className="object-cover"
+            style={{ opacity, zIndex, transition, willChange: "opacity" }}
+          />
+        );
+      })}
 
       {/* 文字黑幕 */}
       <div
