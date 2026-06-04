@@ -57,16 +57,23 @@ export default function Intro() {
 
   // ── 打字機 ────────────────────────────────────────────────
   useEffect(() => {
-    if (currentStep?.type !== "text") return;
+    // 1. 確保它是 text 類型，並且 text 屬性確實存在
+    if (currentStep?.type !== "text" || !currentStep.text) return;
+
+    // 2. 將字串提取出來，這樣 TypeScript 在閉包內就不會報錯了
+    const textToType = currentStep.text;
+    
     let i = 0;
     setTypedText("");
+    
     const id = setInterval(() => {
       i++;
-      setTypedText(currentStep.text.slice(0, i));
-      if (i >= currentStep.text.length) clearInterval(id);
+      setTypedText(textToType.slice(0, i));
+      if (i >= textToType.length) clearInterval(id);
     }, 130);
+    
     return () => clearInterval(id);
-  }, [step, currentStep]); // ✅ 補齊 Dependencies
+  }, [step, currentStep]);
 
   // ── crossfade 時間 ────────────────────────────────────────
   const getFadeDuration = (s) => {
