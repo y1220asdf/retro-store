@@ -1,12 +1,13 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image"; // ✅ 引入 next/image 優化圖片載入
 
 export default function Intro() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [typedText, setTypedText] = useState("");
-  const [transitioning, setTransitioning] = useState(false); // ✅ 新增
+  const [transitioning, setTransitioning] = useState(false);
 
   const firstText = "20年後";
   const finalText = "這時的你決定進入柑仔店一探究竟\n找回阿公的回憶碎片...";
@@ -40,19 +41,19 @@ export default function Intro() {
   // ── 主計時器 ──────────────────────────────────────────────
   useEffect(() => {
     if (step >= storySteps.length) {
-      // ✅ 不直接 push，先觸發黑幕轉場
       setTransitioning(true);
       const enterTimer = setTimeout(() => {
         router.push("/main");
-      }, 2200); // 黑幕淡入(800ms) + 文字停留 + 緩衝
+      }, 2200); 
       return () => clearTimeout(enterTimer);
     }
 
     const timer = setTimeout(() => {
       setStep((prev) => prev + 1);
-    }, currentStep.duration);
+    }, currentStep?.duration); // 加上可選串連，避免最後一步超出陣列時報錯
+    
     return () => clearTimeout(timer);
-  }, [step]);
+  }, [step, storySteps.length, currentStep?.duration, router]); // ✅ 補齊 Dependencies
 
   // ── 打字機 ────────────────────────────────────────────────
   useEffect(() => {
@@ -65,7 +66,7 @@ export default function Intro() {
       if (i >= currentStep.text.length) clearInterval(id);
     }, 130);
     return () => clearInterval(id);
-  }, [step]);
+  }, [step, currentStep]); // ✅ 補齊 Dependencies
 
   // ── crossfade 時間 ────────────────────────────────────────
   const getFadeDuration = (s) => {
@@ -82,18 +83,21 @@ export default function Intro() {
     storySteps.filter((s) => s.type === "image").map((s) => s.src)
   )];
 
-  const handleSkip = () => setStep(finalStepIndex);
+  // ✅ 修正跳過邏輯：直接將 step 設為陣列長度，觸發跳轉與轉場黑幕
+  const handleSkip = () => setStep(storySteps.length);
 
   return (
     <main className="relative flex h-screen w-screen items-center justify-center bg-black overflow-hidden">
 
-      {/* 全部圖片預載，opacity crossfade */}
-      {uniqueSrcs.map((src) => (
-        <img
+      {/* ✅ 改用 next/image 並加上 priority 預載前幾張圖避免閃爍 */}
+      {uniqueSrcs.map((src, index) => (
+        <Image
           key={src}
           src={src}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          priority={index < 5} 
+          className="object-cover"
           style={{
             opacity: !isText && !transitioning && currentStep?.src === src ? 1 : 0,
             transition: `opacity ${fadeDuration}ms ease-in-out`,
@@ -121,7 +125,7 @@ export default function Intro() {
         </div>
       </div>
 
-      {/* ✅ 進場轉場黑幕：最後淡入覆蓋，帶提示文字 */}
+      {/* 進場轉場黑幕：最後淡入覆蓋，帶提示文字 */}
       <div
         className="absolute inset-0 z-40 flex flex-col items-center justify-center bg-black"
         style={{
