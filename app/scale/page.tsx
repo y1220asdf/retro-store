@@ -13,6 +13,18 @@ interface WeightItem {
 export default function ScaleGame() {
   const router = useRouter();
 
+  // 是否鎖定天秤關
+  const [locked, setLocked] = useState(false);
+
+  // 進入天秤關時，檢查有沒有紅豆秘方
+  useEffect(() => {
+    const hasRecipe = localStorage.getItem("hasRecipe") === "true";
+
+    if (!hasRecipe) {
+      setLocked(true);
+    }
+  }, []);
+
   //砝碼設定
   const [availableWeights, setAvailableWeights] = useState<WeightItem[]>([
     { id: 'w-10', grams: 10, label: '10g', imageName: 'scale_10g' },
@@ -360,6 +372,27 @@ export default function ScaleGame() {
         </div>
       )}
 
+       {/* 🔒 未獲得紅豆秘方時的鎖定彈窗 */}
+       {locked && (
+        <div className="fixed inset-0 z-9999 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+          <div className="bg-[#fffdf0] border-4 border-amber-900 rounded-2xl p-8 w-[340px] text-center shadow-2xl">
+            <h2 className="text-xl font-black text-amber-950 mb-3">
+              請先完成日曆拼圖
+            </h2>
+
+            <p className="text-sm text-amber-800 mb-6 leading-relaxed">
+              你還沒有拿到紅豆湯秘方喔！
+            </p>
+
+            <button
+              onClick={() => router.push("/main")}
+              className="w-full bg-amber-900 text-amber-50 font-bold py-3 rounded-xl hover:bg-amber-950 active:scale-95 transition-all"
+            >
+              返回柑仔店
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ export default function MainGame() {
   // [組員新增道具 Step 1]：在這裡新增道具的 React 狀態
   const [hasTape, setHasTape] = useState(false);
   const [hasFilm, setHasFilm] = useState(false);
+  const [hasRecipe, setHasRecipe] = useState(false);
   // const [hasKey, setHasKey] = useState(false); // 範例：另一位組員的道具
 
   // 當打開背包時，去 localStorage 檢查玩家是否有拿到道具
@@ -18,6 +19,7 @@ export default function MainGame() {
       // [組員新增道具 Step 2]：在這裡讀取 localStorage
       if (localStorage.getItem('hasTape') === 'true') setHasTape(true);
       if (localStorage.getItem('hasFilm') === 'true') setHasFilm(true);
+      if (localStorage.getItem('hasRecipe') === 'true') setHasRecipe(true);
       // if (localStorage.getItem('hasKey') === 'true') setHasKey(true); // 範例
     }
   }, [isBackpackOpen]);
@@ -31,11 +33,13 @@ export default function MainGame() {
       // [組員新增道具 Step 3]：在這裡清除對應的 localStorage 記錄
       localStorage.removeItem('hasTape');
       localStorage.removeItem('hasFilm');
+      localStorage.removeItem('hasRecipe');
       // localStorage.removeItem('hasKey'); // 範例
       
       // 同步把畫面上的狀態歸零
       setHasTape(false);
       setHasFilm(false);
+      setHasRecipe(false);
       // setHasKey(false); // 範例
       
       // (選擇性) 如果你們有其他通用的進度也想一起清空，可以直接用 localStorage.clear();
@@ -226,6 +230,20 @@ export default function MainGame() {
                 <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-help">
                   {hasTape ? (
                     <span className="text-2xl sm:text-3xl transition-transform group-hover:scale-110" title="阿嬤的錄音帶">📼</span>
+                  ) : (
+                    <span className="text-black/10 text-xl font-bold">?</span>
+                  )}
+                </div>
+                
+                {/* 第 3 格：秘方 */}
+                <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-help">
+                  {hasRecipe ? (
+                    <img
+                      src="/images/scale_menu.webp"
+                      alt="紅豆湯秘方"
+                      title="紅豆湯秘方"
+                      className="w-[70%] h-[70%] object-contain transition-transform group-hover:scale-110"
+                    />
                   ) : (
                     <span className="text-black/10 text-xl font-bold">?</span>
                   )}
