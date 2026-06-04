@@ -363,10 +363,13 @@ export default function ScaleGame() {
             </p>
             
             <button
-              onClick={() => router.push('/main')}
+              onClick={() => {
+                localStorage.setItem('hasBeans', 'true');
+                router.push('/main');
+              }}
               className="w-full bg-stone-900/10 backdrop-blur-md border-2 border-white/60 hover:bg-stone-900/20 text-stone-900 font-black py-3 px-6 rounded-2xl shadow-md transition-all tracking-widest text-sm cursor-pointer"
             >
-              返回柑仔店
+              收進背包並回到柑仔店
             </button>
           </div>
         </div>

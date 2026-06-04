@@ -11,6 +11,8 @@ export default function MainGame() {
   const [hasTape, setHasTape] = useState(false);
   const [hasFilm, setHasFilm] = useState(false);
   const [hasRecipe, setHasRecipe] = useState(false);
+  const [hasBeans, setHasBeans] = useState(false);
+  
   // const [hasKey, setHasKey] = useState(false); // 範例：另一位組員的道具
 
   // 當打開背包時，去 localStorage 檢查玩家是否有拿到道具
@@ -20,6 +22,7 @@ export default function MainGame() {
       if (localStorage.getItem('hasTape') === 'true') setHasTape(true);
       if (localStorage.getItem('hasFilm') === 'true') setHasFilm(true);
       if (localStorage.getItem('hasRecipe') === 'true') setHasRecipe(true);
+      if (localStorage.getItem('hasBeans') === 'true') setHasBeans(true);
       // if (localStorage.getItem('hasKey') === 'true') setHasKey(true); // 範例
     }
   }, [isBackpackOpen]);
@@ -34,12 +37,14 @@ export default function MainGame() {
       localStorage.removeItem('hasTape');
       localStorage.removeItem('hasFilm');
       localStorage.removeItem('hasRecipe');
+      localStorage.removeItem('hasBeans');
       // localStorage.removeItem('hasKey'); // 範例
       
       // 同步把畫面上的狀態歸零
       setHasTape(false);
       setHasFilm(false);
       setHasRecipe(false);
+      setHasBeans(false);
       // setHasKey(false); // 範例
       
       // (選擇性) 如果你們有其他通用的進度也想一起清空，可以直接用 localStorage.clear();
@@ -249,19 +254,33 @@ export default function MainGame() {
                   )}
                 </div>
 
-                {/* 第 3 格：時光膠卷 */}
-                  <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-help">
-                    {hasFilm ? (
-                      <span 
-                        className="text-2xl sm:text-3xl transition-transform group-hover:scale-110" 
-                        title="時光膠卷"
-                      >
+                {/* 第 4 格：時光膠卷 */}
+                <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-help">
+                  {hasFilm ? (
+                    <span 
+                      className="text-2xl sm:text-3xl transition-transform group-hover:scale-110" 
+                      title="時光膠卷"
+                    >
                         🎞️
-                      </span>
-                    ) : (
-                      <span className="text-black/10 text-xl font-bold">?</span>
-                    )}
-                  </div>
+                    </span>
+                  ) : (
+                    <span className="text-black/10 text-xl font-bold">?</span>
+                  )}
+                </div>
+
+                {/* 第 4 格：紅豆 */}
+                <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-help">
+                  {hasBeans ? (
+                    <img
+                      src="/images/beans.webp"
+                      alt="紅豆"
+                      title="紅豆"
+                      className="w-[75%] h-[75%] object-contain transition-transform group-hover:scale-110"
+                    />
+                  ) : (
+                    <span className="text-black/10 text-xl font-bold">?</span>
+                  )}
+                </div>
 
                 {/* [組員新增道具 Step 4]：在這裡渲染新的道具格子 */}
                 {/* 範例：
