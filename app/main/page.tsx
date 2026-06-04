@@ -272,7 +272,7 @@ export default function MainGame() {
                 <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-help">
                   {hasBeans ? (
                     <img
-                      src="/images/beans.webp"
+                      src="/images/beans_big.webp"
                       alt="紅豆"
                       title="紅豆"
                       className="w-[75%] h-[75%] object-contain transition-transform group-hover:scale-110"

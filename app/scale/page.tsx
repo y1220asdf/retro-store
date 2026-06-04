@@ -352,9 +352,9 @@ export default function ScaleGame() {
             {/* 🔴 核心修正：利用 scale-[3] 直接將圖片核心像素強制放大 3 倍，並允許 overflow 穿透外框 */}
             <div className="w-full flex items-center justify-center h-32 my-4 overflow-visible">
               <img 
-                src="/images/beans.webp" 
+                src="/images/beans_big.webp" 
                 alt="獲得道具：紅豆" 
-                className="w-24 h-24 object-contain transform scale-[5] drop-shadow-[0_4px_10px_rgba(0,0,0,0.15)]"
+                className="w-24 h-24 object-contain transform scale-[2] drop-shadow-[0_4px_10px_rgba(0,0,0,0.15)]"
               />
             </div>
 
