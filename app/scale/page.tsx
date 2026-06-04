@@ -246,9 +246,9 @@ export default function ScaleGame() {
           {totalLeftBean > 0 && (
             <div className="absolute top-[7%] left-[-10%] w-[290px] h-[150px] z-30 pointer-events-none overflow-visible">
               <img
-                src="/images/beans.webp"
+                src="/images/beans_big.webp"
                 alt="紅豆堆"
-                className="absolute left-1/2 top-1/2 w-[330px] h-auto -translate-x-1/2 -translate-y-1/2 drop-shadow-md"
+                className="absolute left-1/2 top-1/2 w-[180px] h-auto -translate-x-1/2 -translate-y-1/2 drop-shadow-md"
               />
             </div>
           )}
