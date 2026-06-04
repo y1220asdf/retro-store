@@ -246,11 +246,12 @@ export default function LuckyDrawGame() {
                       }}
                     >
                       {isAns ? (
-                        /* 答案格：露出藏在後面的老照片 */
-                        <div
-                          className="w-full h-full bg-cover bg-center animate-fade-in"
-                          style={{ backgroundImage: 'url(/images/resolved_photo.png)' }}
-                        />
+                        /* 答案格：膠捲／照片提示（通關後才顯示完整照片） */
+                        <div className="w-full h-full flex items-center justify-center animate-fade-in">
+                          <span className="text-3xl sm:text-4xl leading-none" aria-hidden>
+                            🎞️
+                          </span>
+                        </div>
                       ) : (
                         /* 非答案格：使用 lottery_arrow.png */
                         <div className="w-full h-full flex items-center justify-center p-2 animate-fade-in">
@@ -282,7 +283,7 @@ export default function LuckyDrawGame() {
 
               <div className="relative w-full aspect-[4/3] bg-zinc-200 rounded-lg border-4 border-white shadow-xl overflow-hidden mb-5 transform rotate-1">
                 <img
-                  src="/images/resolved_photo.png"
+                  src="/images/lottery_end.webp"
                   alt="阿公阿嬤創店合照"
                   className="w-full h-full object-cover"
                 />
