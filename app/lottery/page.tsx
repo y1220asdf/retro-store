@@ -116,11 +116,13 @@ export default function LuckyDrawGame() {
       setTimeout(() => {
         // TODO: 未來音效確認後再啟用
         // playSFX('success');
-
+    
         setIsGameOver(true);
-        localStorage.setItem('hasPhoto', 'true');
+    
+        // 🎒 將時光膠卷收進背包
+        localStorage.setItem('hasFilm', 'true');
       }, 500);
-    } else {
+    }else {
       // TODO: 未來音效確認後再啟用
       // setTimeout(() => {
       //   playSFX('error');
