@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-// ✅ 預先定義資料的型別，解決 TS 的 implicitly 'any' type 問題
+// ✅ 預先定義資料的型別
 type StoryStep = {
   type: string;
   duration: number;
@@ -11,40 +11,45 @@ type StoryStep = {
   text?: string;
 };
 
+// ✅ 移到元件外部，避免每次 render 重建，防止 useEffect 依賴不穩定
+const storySteps: StoryStep[] = [
+  { type: "image", src: "/images/0.webp",   duration: 1600 },
+  { type: "image", src: "/images/1.1.webp", duration: 650  },
+  { type: "image", src: "/images/1.2.webp", duration: 650  },
+  { type: "image", src: "/images/1.3.webp", duration: 900  },
+  { type: "image", src: "/images/2.1.webp", duration: 750  },
+  { type: "image", src: "/images/2.2.webp", duration: 750  },
+  { type: "image", src: "/images/2.3.webp", duration: 1300 },
+  { type: "image", src: "/images/3.1.webp", duration: 2600 },
+  { type: "text",  text: "20年後",          duration: 3600 },
+  { type: "image", src: "/images/4.1.webp", duration: 2400 },
+  { type: "image", src: "/images/4.2.webp", duration: 2400 },
+  { type: "image", src: "/images/5.1.webp", duration: 2500 },
+  { type: "image", src: "/images/6.1.webp", duration: 420  },
+  { type: "image", src: "/images/6.2.webp", duration: 420  },
+  { type: "image", src: "/images/6.3.webp", duration: 1100 },
+  { type: "image", src: "/images/7.1.webp", duration: 2300 },
+  { type: "image", src: "/images/8.1.webp", duration: 650  },
+  { type: "image", src: "/images/8.2.webp", duration: 650  },
+  { type: "image", src: "/images/8.3.webp", duration: 1300 },
+  { type: "text",  text: "這時的你決定進入柑仔店一探究竟\n找回阿公的回憶碎片...", duration: 4300 },
+];
+
+// ✅ 預先計算，避免在元件內重複運算
+const uniqueSrcs = [...new Set(
+  storySteps
+    .filter((s) => s.type === "image" && s.src)
+    .map((s) => s.src as string)
+)];
+
+const finalStepIndex = storySteps.length - 1;
+
 export default function Intro() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [transitioning, setTransitioning] = useState(false);
 
-  const firstText = "20年後";
-  const finalText = "這時的你決定進入柑仔店一探究竟\n找回阿公的回憶碎片...";
-
-  // ✅ 明確標示陣列型別為 StoryStep[]
-  const storySteps: StoryStep[] = [
-    { type: "image", src: "/images/0.webp",   duration: 1600 },
-    { type: "image", src: "/images/1.1.webp", duration: 650  },
-    { type: "image", src: "/images/1.2.webp", duration: 650  },
-    { type: "image", src: "/images/1.3.webp", duration: 900  },
-    { type: "image", src: "/images/2.1.webp", duration: 750  },
-    { type: "image", src: "/images/2.2.webp", duration: 750  },
-    { type: "image", src: "/images/2.3.webp", duration: 1300 },
-    { type: "image", src: "/images/3.1.webp", duration: 2600 },
-    { type: "text",  text: firstText,         duration: 3600 },
-    { type: "image", src: "/images/4.1.webp", duration: 2400 },
-    { type: "image", src: "/images/4.2.webp", duration: 2400 },
-    { type: "image", src: "/images/5.1.webp", duration: 2500 },
-    { type: "image", src: "/images/6.1.webp", duration: 420  },
-    { type: "image", src: "/images/6.2.webp", duration: 420  },
-    { type: "image", src: "/images/6.3.webp", duration: 1100 },
-    { type: "image", src: "/images/7.1.webp", duration: 2300 },
-    { type: "image", src: "/images/8.1.webp", duration: 650  },
-    { type: "image", src: "/images/8.2.webp", duration: 650  },
-    { type: "image", src: "/images/8.3.webp", duration: 1300 },
-    { type: "text",  text: finalText,         duration: 4300 },
-  ];
-
-  const finalStepIndex = storySteps.length - 1;
   const currentStep = storySteps[step] ?? storySteps[finalStepIndex];
 
   // ── 主計時器 ──────────────────────────────────────────────
@@ -59,31 +64,31 @@ export default function Intro() {
 
     const timer = setTimeout(() => {
       setStep((prev) => prev + 1);
-    }, currentStep?.duration);
-    
+    }, currentStep.duration);
+
     return () => clearTimeout(timer);
-  }, [step, storySteps.length, currentStep?.duration, router]); 
+  }, [step, router]); // ✅ currentStep.duration 透過 step 間接決定，不需列入依賴
 
   // ── 打字機 ────────────────────────────────────────────────
   useEffect(() => {
-    // ✅ 嚴格檢查確保 text 存在，排除 TypeScript 警告
-    if (currentStep?.type !== "text" || !currentStep.text) return;
-    
-    const textToType = currentStep.text;
+    // ✅ 只依賴 step，避免 currentStep reference 不穩定導致重複觸發
+    const s = storySteps[step];
+    if (s?.type !== "text" || !s.text) return;
+
+    const textToType = s.text;
     let i = 0;
     setTypedText("");
-    
+
     const id = setInterval(() => {
       i++;
       setTypedText(textToType.slice(0, i));
       if (i >= textToType.length) clearInterval(id);
     }, 130);
-    
+
     return () => clearInterval(id);
-  }, [step, currentStep]); 
+  }, [step]); // ✅ 只依賴 step
 
   // ── crossfade 時間 ────────────────────────────────────────
-  // ✅ 加上型別與防呆
   const getFadeDuration = (s: StoryStep | undefined) => {
     if (!s || s.type === "text") return 800;
     if (!s.duration) return 800;
@@ -94,13 +99,6 @@ export default function Intro() {
 
   const fadeDuration = getFadeDuration(currentStep);
   const isText = currentStep?.type === "text";
-
-  // ✅ 過濾出確實有 src 的項目以避免型別錯誤
-  const uniqueSrcs = [...new Set(
-    storySteps
-      .filter((s) => s.type === "image" && s.src)
-      .map((s) => s.src as string)
-  )];
 
   const handleSkip = () => setStep(storySteps.length);
 
@@ -113,7 +111,7 @@ export default function Intro() {
           src={src}
           alt=""
           fill
-          priority={index < 5} 
+          priority={index < 5}
           className="object-cover"
           style={{
             opacity: !isText && !transitioning && currentStep?.src === src ? 1 : 0,
