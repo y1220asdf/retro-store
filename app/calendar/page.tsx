@@ -28,10 +28,16 @@ export default function CalendarPuzzle() {
   const isAudioUnlocked = useRef<boolean>(false);
 
   useEffect(() => {
-    // 初始化音效檔案
+    // 建立音效實體
+    const flip = new Audio('/audio/paper01.mp3');
+    flip.volume = 0.3; // 調整為 30% 的音量，這通常是比較舒服的背景音效大小
+  
+    const clear = new Audio('/audio/gameclear.mp3');
+    clear.volume = 0.2; // 通關音效可以稍微大聲一點點，設為 50%
+  
     audioRefs.current = {
-      cardFlip: new Audio('/audio/paper01.mp3'),
-      success: new Audio('/audio/gameclear.mp3'), // 通關用阿公懷舊音效
+      cardFlip: flip,
+      success: clear,
     };
 
     // 初始化拼圖並「強制打亂」
