@@ -380,11 +380,11 @@ export default function ScaleGame() {
         <div className="fixed inset-0 z-9999 bg-black/80 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[#fffdf0] border-4 border-amber-900 rounded-2xl p-8 w-[340px] text-center shadow-2xl">
             <h2 className="text-xl font-black text-amber-950 mb-3">
-              請先完成日曆拼圖
+              你還沒有拿到紅豆湯秘方喔！
             </h2>
 
             <p className="text-sm text-amber-800 mb-6 leading-relaxed">
-              你還沒有拿到紅豆湯秘方喔！
+              請再探索一下柑仔店內部
             </p>
 
             <button

@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
 
 export default function MainGame() {
   const DEV_MODE = false; 
@@ -111,14 +112,49 @@ export default function MainGame() {
     };
   }, [playDirection]);
 
-  // ==================== 🗺️ 關卡熱區與對應道具設定 ====================
+  {/* ==================== 關卡點擊熱區 (圖片化) ==================== */}
   const hotspots = [
-    { id: 'lottery',  name: '1. 抽抽樂',   href: '/lottery',  itemKey: 'hasFilm',   style: { top: '30%', left: '44%', width: '10%', height: '31%' } },
-    { id: 'candy',    name: '2. 糖果罐',   href: '/candy',    itemKey: 'hasTape',   style: { top: '53%', left: '15%', width: '15%', height: '15%' } },
-    { id: 'calendar', name: '3. 日曆拼圖', href: '/calendar', itemKey: 'hasRecipe', style: { top: '65%', left: '50%', width: '8%',  height: '25%' } },
-    { id: 'scale',    name: '4. 秤重',     href: '/scale',    itemKey: 'hasBeans',  style: { top: '52%', left: '33%', width: '15%', height: '15%' } },
-    { id: 'cooker',   name: '5. 讓他煮',   href: '/cooker',   itemKey: null,        style: { top: '51%', left: '59%', width: '6%',  height: '10%' } },
+    { id: 'lottery',  name: '抽抽樂！來抽一個看看',  href: '/lottery',  itemKey: 'hasTape',   image: '/images/obj_lottery.png',  style: { top: '30%', left: '45.4%', width: '10%', height: '30.5%' } },
+    { id: 'candy',    name: '哇！有好多不同顏色的糖果！',  href: '/candy',    itemKey: 'hasFilm',   image: '/images/obj_candy.png',    style: { top: '53%', left: '15%', width: '15%', height: '15%' } },
+    { id: 'calendar', name: '垃圾桶裡好像有什麼...？', href: '/calendar', itemKey: 'hasRecipe', image: '/images/obj_calendar.png', style: { top: '70%', left: '50.9%', width: '7%',  height: '25%' } },
+    { id: 'scale',    name: '現在好少看到這種傳統的天秤喔...',     href: '/scale',    itemKey: 'hasBeans',  image: '/images/obj_scale.png',    style: { top: '52%', left: '34%', width: '15%', height: '15%' } },
+    { id: 'cooker',   name: '每個台灣人家裡都有的大同電鍋',   href: '/cooker',   itemKey: 'isDone',    image: '/images/obj_cooker.png',   style: { top: '50.4%', left: '57.8%', width: '11.3%',  height: '10.2%' } },
   ];
+
+  {hotspots.map((spot) => (
+  <Link
+    key={spot.id}
+    href={spot.href}
+    onClick={() => playClickSound()}
+    className="absolute z-20"
+    style={spot.style}
+  >
+    <motion.div
+      className="relative w-full h-full flex items-center justify-center"
+      initial={{ opacity: 0.9, scale: 1 }}
+      whileHover={{ 
+        opacity: 1, 
+        scale: 1.1,
+        // filter: "drop-shadow(0 0 8px rgba(255, 255, 255, 0.8))" // 懸停時發光
+      }}
+      whileTap={{ scale: 0.95 }}
+    >
+      {/* 去背圖片物件 */}
+      <img 
+        src={spot.image} 
+        alt={spot.name} 
+        className="w-full h-full object-contain"
+      />
+
+      {/* 開發模式顯示標籤 */}
+      {DEV_MODE && (
+        <span className="absolute -top-6 bg-black/70 text-white px-2 py-1 rounded text-[10px] whitespace-nowrap">
+          {spot.id}
+        </span>
+      )}
+    </motion.div>
+  </Link>
+))}
 
   return (
     <main onClick={playClickSound} className="flex h-screen w-screen items-center justify-center bg-zinc-900 p-4 overflow-hidden selection:bg-transparent">
@@ -149,14 +185,15 @@ export default function MainGame() {
           `}
         />
         
-        {/* ==================== 關卡點擊熱區 ==================== */}
+        {/* ==================== 關卡點擊熱區 (整合圖片與重複檢查邏輯) ==================== */}
         {hotspots.map((spot) => (
           <Link
             key={spot.id}
             href={spot.href}
             onClick={(e) => {
               playClickSound();
-              
+
+              // --- 重複遊玩彈窗檢查 ---
               if (spot.itemKey) {
                 const hasItem = localStorage.getItem(spot.itemKey) === 'true';
                 if (hasItem) {
@@ -166,16 +203,36 @@ export default function MainGame() {
                 }
               }
             }}
-            className={`absolute cursor-pointer rounded transition-all flex items-center justify-center text-center text-[10px] sm:text-xs font-bold z-20
-              ${DEV_MODE 
-                ? 'border-2 border-red-500 bg-red-500/20 text-red-200' 
-                : 'hover:bg-white/10 active:scale-95'
-              }
+            // 用透明容器
+            className={`absolute cursor-pointer z-20 flex items-center justify-center
+              ${DEV_MODE ? 'border-2 border-red-500 bg-red-500/10' : ''}
             `}
             style={spot.style}
             title={spot.name}
           >
-            {DEV_MODE && <span className="bg-black/70 px-1 rounded">{spot.id}</span>}
+            {/* 🎬 物件圖片層：加入 Framer Motion 動效 */}
+            <motion.div
+              className="w-full h-full relative flex items-center justify-center"
+              whileHover={{ 
+                scale: 1.03, 
+                // filter: "drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) brightness(1.1)" 
+              }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <img 
+                src={spot.image} 
+                alt={spot.name} 
+                className="w-full h-full object-contain"
+              />
+
+              {/* 如果該關卡已經完成，可以加個小勾勾或特效 (選做)
+              {!DEV_MODE && spot.itemKey && localStorage.getItem(spot.itemKey) === 'true' && (
+                <span className="absolute -top-2 -right-2 text-xl">✅</span>
+              )} */}
+            </motion.div>
+
+            {/* 開發模式文字 */}
+            {DEV_MODE && <span className="absolute bg-black/70 text-white px-1 rounded text-[10px]">{spot.id}</span>}
           </Link>
         ))}
 
@@ -192,7 +249,7 @@ export default function MainGame() {
               : 'hover:bg-white/10 active:scale-90'
             }
           `}
-          style={{ top: '80%', left: '91.5%', width: '9%', height: '15%' }}
+          style={{ top: '80.5%', left: '91.7%', width: '8.7%', height: '15%' }}
           title="打開背包"
         >
           {DEV_MODE && <span className="bg-black/70 px-1 rounded">背包</span>}
@@ -201,7 +258,7 @@ export default function MainGame() {
 
         {/* ==================== 🚨 自訂重複遊玩提示框 (UI Modal) ==================== */}
         {showReplayAlert && (
-          <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="absolute inset-0 z-60 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
             <div className="bg-[#eedcb3] p-6 sm:p-8 rounded-2xl border-4 border-amber-900/40 shadow-2xl flex flex-col items-center max-w-[80%] sm:max-w-sm text-center transform transition-transform scale-100">
               <h3 className="text-amber-900 font-bold text-lg sm:text-xl mb-6">
                 你已經破關嘍！還要再玩一次嗎？
@@ -367,7 +424,7 @@ export default function MainGame() {
 
         {/* ==================== 📝 便條紙提示獨立彈出視窗 ==================== */}
         {showNoteModal && (
-          <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowNoteModal(false)}>
+          <div className="absolute inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in" onClick={() => setShowNoteModal(false)}>
             <div 
               className="bg-[#fffdf0] p-6 rounded-lg shadow-xl border border-amber-200 transform -rotate-2 max-w-[80%] sm:max-w-sm w-full"
               onClick={(e) => e.stopPropagation()} 
@@ -398,7 +455,7 @@ export default function MainGame() {
 
         {/* ==================== 📜 秘方放大圖片彈出視窗 ==================== */}
         {showRecipeModal && (
-          <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowRecipeModal(false)}>
+          <div className="absolute inset-0 z-60 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setShowRecipeModal(false)}>
             <div 
               className="relative max-w-[90%] max-h-[85%] flex items-center justify-center"
               onClick={(e) => e.stopPropagation()} 
