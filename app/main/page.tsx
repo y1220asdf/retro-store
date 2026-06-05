@@ -115,10 +115,10 @@ export default function MainGame() {
   {/* ==================== 關卡點擊熱區 (圖片化) ==================== */}
   const hotspots = [
     { id: 'lottery',  name: '抽抽樂！來抽一個看看',  href: '/lottery',  itemKey: 'hasTape',   image: '/images/obj_lottery.png',  style: { top: '30%', left: '45.3%', width: '10.3%', height: '30.8%' } },
-    { id: 'candy',    name: '哇！有好多不同顏色的糖果！',  href: '/candy',    itemKey: 'hasFilm',   image: '/images/obj_candy.png',    style: { top: '53.6%', left: '15.6%', width: '13.5%', height: '13.8%' } },
-    { id: 'calendar', name: '垃圾桶裡好像有什麼...？', href: '/calendar', itemKey: 'hasRecipe', image: '/images/obj_calendar.png', style: { top: '70.1%', left: '50.7%', width: '7%',  height: '25%' } },
+    { id: 'candy',    name: '哇！有好多不同顏色的糖果！',  href: '/candy',    itemKey: 'hasFilm',   image: '/images/obj_candy.png',    style: { top: '53.6%', left: '19.4%', width: '6%', height: '13.8%' } },
+    { id: 'calendar', name: '垃圾桶裡好像有什麼...？', href: '/calendar', itemKey: 'hasRecipe', image: '/images/obj_calendar.png', style: { top: '72.6%', left: '50.7%', width: '7%',  height: '20%' } },
     { id: 'scale',    name: '現在好少看到這種傳統的天秤喔...',     href: '/scale',    itemKey: 'hasBeans',  image: '/images/obj_scale.png',    style: { top: '52%', left: '34%', width: '15%', height: '15%' } },
-    { id: 'cooker',   name: '每個台灣人家裡都有的大同電鍋',   href: '/cooker',   itemKey: 'isDone',    image: '/images/obj_cooker.png',   style: { top: '50.4%', left: '57.8%', width: '11.3%',  height: '10.2%' } },
+    { id: 'cooker',   name: '每個台灣人家裡都有的大同電鍋',   href: '/cooker',   itemKey: 'isDone',    image: '/images/obj_cooker.png',   style: { top: '50.3%', left: '59.9%', width: '7%',  height: '10.4%' } },
   ];
 
   {hotspots.map((spot) => (
