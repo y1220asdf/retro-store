@@ -166,6 +166,7 @@ export default function ScaleGame() {
     <div 
       className="fixed inset-0 w-screen h-screen overflow-hidden bg-cover bg-center bg-no-repeat select-none"
       style={{ backgroundImage: "url('/images/scale_1.webp')" }}
+      onDragOver={(e) => e.preventDefault()}
     >
       
       {/*返回主導覽按鈕 */}

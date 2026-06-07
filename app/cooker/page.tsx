@@ -461,6 +461,7 @@ export default function CookerGame() {
     <div
       className="fixed inset-0 w-screen h-screen overflow-hidden select-none"
       style={{ backgroundImage: `url('${IMG.bg}')`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+      onDragOver={(e) => e.preventDefault()}
     >
       {/* Back button */}
       <button onClick={() => router.push('/main')}
