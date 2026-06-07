@@ -61,9 +61,6 @@ function CookerImg({ lidOn, beansInBowl, sugarInBowl, waterInBowl, waterInCooker
         className="w-[330px] h-auto object-contain drop-shadow-2xl select-none"
         draggable={false}
       />
-      {clickable && (
-        <div className="absolute inset-0 rounded-2xl bg-amber-300/5 pointer-events-none animate-pulse" />
-      )}
     </div>
   );
 }
@@ -73,7 +70,6 @@ function BottleImg({ selected, onClick }: { selected: boolean; onClick?: () => v
   return (
     <div
       className={`relative ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
-      style={selected ? { filter: 'drop-shadow(0 0 10px rgba(100,200,255,0.85))' } : {}}
       onClick={onClick}
     >
       <img
@@ -82,9 +78,6 @@ function BottleImg({ selected, onClick }: { selected: boolean; onClick?: () => v
         className="w-[204px] h-auto object-contain select-none"
         draggable={false}
       />
-      {selected && (
-        <div className="absolute inset-0 rounded-xl border-2 border-sky-400 pointer-events-none animate-pulse" />
-      )}
     </div>
   );
 }
@@ -101,7 +94,7 @@ function CupImg({ filled, onClick, isDraggable, onDragStart }: {
         onClick ? 'cursor-pointer hover:scale-110' : '',
         isDraggable ? 'cursor-grab active:cursor-grabbing' : '',
       ].join(' ')}
-      style={onClick ? { filter: 'drop-shadow(0 0 6px rgba(100,200,255,0.6))' } : {}}
+      style={{}}
       onClick={onClick}
       draggable={isDraggable}
       onDragStart={onDragStart}
@@ -439,7 +432,7 @@ export default function CookerGame() {
     >
       {/* Back button */}
       <button onClick={() => router.push('/main')}
-        className="fixed top-4 left-[104px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
+        className="fixed top-4 left-[86px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
       >⬅ 返回柑仔店</button>
 
       {/* Step hint */}

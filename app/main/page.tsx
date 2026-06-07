@@ -297,9 +297,9 @@ export default function MainGame() {
         {showBackpackHint && (
           <div
             className="absolute pointer-events-none z-30 animate-bounce flex flex-col items-center justify-center gap-0.5"
-            style={{ top: '80.5%', left: '91.7%', width: '8.7%', height: '15%' }}
+            style={{ top: 'calc(80.5% + 36px)', left: '91.7%', width: '8.7%', height: '15%' }}
           >
-            <span className="text-xl leading-none drop-shadow-lg">👆</span>
+            <span className="text-[50px] leading-none drop-shadow-lg">👆</span>
             <span className="text-[8px] font-bold text-white bg-black/65 px-1.5 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm leading-tight">
               點開背包
             </span>
@@ -397,8 +397,8 @@ export default function MainGame() {
                 >
                   <span className="text-3xl sm:text-4xl transition-transform group-hover:scale-110 group-active:scale-95" title="阿嬤的便條紙 (點擊查看)">📝</span>
                   {showNoteHint && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none animate-bounce z-10">
-                      <span className="text-2xl drop-shadow-lg">👆</span>
+                    <div className="absolute inset-0 flex items-center justify-center translate-y-9 pointer-events-none select-none animate-bounce z-10">
+                      <span className="text-[60px] leading-none drop-shadow-lg">👆</span>
                     </div>
                   )}
                 </div>

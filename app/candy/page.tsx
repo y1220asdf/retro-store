@@ -157,7 +157,7 @@ export default function CandyGame() {
 
         <button
           onClick={() => router.push('/main')}
-          className="fixed top-4 left-[104px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm transition-all hover:bg-white active:scale-95 shadow-[4px_4px_0px_rgba(120,60,0,0.2)]"
+          className="fixed top-4 left-[86px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm transition-all hover:bg-white active:scale-95 shadow-[4px_4px_0px_rgba(120,60,0,0.2)]"
         >
           ⬅ 返回柑仔店
         </button>
@@ -171,7 +171,7 @@ export default function CandyGame() {
             playSFX('jarDrop');
             setActiveOverlay('candy');
           }}
-          className="absolute top-[10%] left-[20%] w-[25%] h-[65%] cursor-pointer rounded-3xl transition-colors hover:bg-white/10 z-10"
+          className="absolute top-[10%] left-[20%] w-[25%] h-[65%] cursor-pointer z-10"
           title="仔細查看糖果罐"
         />
 
@@ -182,7 +182,7 @@ export default function CandyGame() {
             playSFX('pickup');
             setActiveOverlay('phone');
           }}
-          className="absolute top-[35%] left-[45%] w-[35%] h-[45%] cursor-pointer rounded-3xl transition-colors hover:bg-white/10 z-10"
+          className="absolute top-[35%] left-[45%] w-[35%] h-[45%] cursor-pointer z-10"
           title="拿起話筒撥號"
         />
 
@@ -231,13 +231,13 @@ export default function CandyGame() {
               
               <button onClick={() => !isCalling && setActiveOverlay('none')} className={`absolute -top-2 right-4 text-3xl font-bold text-[#7cb39e] transition-colors ${isCalling ? 'opacity-50 cursor-not-allowed' : 'hover:text-white'}`}>✕</button>
               
-              <div className="absolute top-[6%] w-[45%] bg-[#1b362c] border-b-2 border-t-2 border-[#12241d] shadow-[inset_0_3px_5px_rgba(0,0,0,0.5)] rounded px-2 py-1 text-center font-mono text-xl text-emerald-400 tracking-[0.4em] h-10 flex items-center justify-center">
-                {inputPassword.split('').map(() => '• ')}
-                {isCalling && (
-                  <span className="text-emerald-300 text-sm tracking-normal animate-pulse">通話中...</span>
-                )}
-                {inputPassword.length === 4 && !isCalling && inputPassword !== CORRECT_PASSWORD && (
-                  <span className="text-red-500 text-sm tracking-normal animate-pulse">空號</span>
+              <div className="absolute top-[6%] w-[45%] bg-[#1b362c] border-b-2 border-t-2 border-[#12241d] shadow-[inset_0_3px_5px_rgba(0,0,0,0.5)] rounded px-2 py-1 text-center font-mono text-xl text-emerald-400 h-10 flex items-center justify-center overflow-hidden">
+                {isCalling ? (
+                  <span className="text-emerald-300 text-sm tracking-wide animate-pulse whitespace-nowrap">通話中...</span>
+                ) : inputPassword.length === 4 && inputPassword !== CORRECT_PASSWORD ? (
+                  <span className="text-red-400 text-sm tracking-wide animate-pulse whitespace-nowrap">空號</span>
+                ) : (
+                  <span className="tracking-[0.4em]">{inputPassword.split('').map(() => '•').join('')}</span>
                 )}
               </div>
 
