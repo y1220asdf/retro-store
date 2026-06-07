@@ -262,12 +262,23 @@ function SteamParticles({ active, fullScreen }: { active: boolean; fullScreen: b
 function ResultModal({ result, elapsedSec, router, onReset }: {
   result: ResultType; elapsedSec: number; router: ReturnType<typeof useRouter>; onReset: () => void;
 }) {
+  const [showIncompletePopup, setShowIncompletePopup] = useState(false);
+
   const info = {
     perfect: {
       emoji: '🎉', title: '好吃紅豆湯！',
       desc: '火候剛剛好，粒粒分明、軟糯香甜。\n阿公看到一定會很開心！',
       btnLabel: '進入結局',
-      action: () => { localStorage.setItem('hasSoup', 'true'); router.push('/ending'); },
+      action: () => {
+        localStorage.setItem('hasSoup', 'true');
+        const allCollected = ['hasTape', 'hasFilm', 'hasRecipe', 'hasBeans']
+          .every(k => localStorage.getItem(k) === 'true');
+        if (allCollected) {
+          router.push('/ending');
+        } else {
+          setShowIncompletePopup(true);
+        }
+      },
     },
     overcooked: {
       emoji: '😓', title: '煮過頭了...',
@@ -285,7 +296,7 @@ function ResultModal({ result, elapsedSec, router, onReset }: {
 
   return (
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50">
-      <div className="bg-[#fdfaf2] border border-amber-900/10 p-10 rounded-[32px] max-w-sm w-full text-center flex flex-col items-center shadow-[0_0_60px_rgba(0,0,0,0.55),0_15px_30px_rgba(0,0,0,0.3)]">
+      <div className="relative bg-[#fdfaf2] border border-amber-900/10 p-10 rounded-[32px] max-w-sm w-full text-center flex flex-col items-center shadow-[0_0_60px_rgba(0,0,0,0.55),0_15px_30px_rgba(0,0,0,0.3)] overflow-hidden">
         <ResultBowlImg type={result} />
         <p className="text-4xl mt-2 mb-1">{info.emoji}</p>
         <h2 className="text-xl font-black text-amber-950 mb-3 tracking-wider">{info.title}</h2>
@@ -302,6 +313,27 @@ function ResultModal({ result, elapsedSec, router, onReset }: {
           >
             先回到柑仔店逛逛
           </button>
+        )}
+
+        {/* ── 道具未集齊 popup ── */}
+        {showIncompletePopup && (
+          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-[32px] z-10">
+            <div className="bg-[#fdfaf2] p-6 rounded-2xl max-w-[260px] w-full text-center flex flex-col items-center shadow-xl border border-amber-900/20">
+              <span className="text-3xl mb-2">🎒</span>
+              <h3 className="text-base font-black text-amber-950 mb-2 tracking-wider">還沒收集完！</h3>
+              <p className="text-sm text-amber-800 mb-4 leading-relaxed">
+                尚有道具還沒搜集到<br />去其他關卡逛逛吧
+              </p>
+              <button
+                onClick={() => router.push('/main')}
+                className="w-full bg-amber-900 text-amber-50 font-bold py-2 px-4 rounded-xl text-sm tracking-widest hover:bg-amber-950 active:scale-95 transition-all cursor-pointer"
+              >回到柑仔店</button>
+              <button
+                onClick={() => setShowIncompletePopup(false)}
+                className="mt-2 text-xs text-amber-600/70 hover:text-amber-700 transition-colors py-1 cursor-pointer"
+              >留在這裡</button>
+            </div>
+          </div>
         )}
       </div>
     </div>
@@ -482,22 +514,36 @@ export default function CookerGame() {
         </div>
       )}
 
-      {/* ── 左側：砂糖罐（sugarInBowl 後靜態顯示） ── */}
+      {/* ── 左側：砂糖罐（視覺層，sugarInBowl 後靜態顯示） ── */}
       <div
-        title={!sugarInBowl ? '將勺子拖曳到砂糖罐舀起砂糖' : undefined}
-        className="absolute z-20 p-8"
-        style={{ bottom: 'calc(24% - 36px)', left: 'calc(3% + 4px)' }}
-        onDragOver={!sugarInBowl ? (e) => e.preventDefault() : undefined}
-        onDrop={!sugarInBowl ? (e) => {
-          e.preventDefault();
-          const id = e.dataTransfer.getData('text');
-          if (id === 'spoon' && !spoonHasSugar) {
-            setSpoonHasSugar(true);
-          }
-        } : undefined}
+        className="absolute z-20"
+        style={{ bottom: 'calc(24% - 4vh)', left: '3%' }}
       >
         <SugarImg />
+        {/* 砂糖物件本身只做視覺用 */}
       </div>
+
+      {/* ── 左側：砂糖偵測區（透明大區塊，置中對齊砂糖物件） ── */}
+      {!sugarInBowl && (
+        <div
+          title="將勺子拖曳到砂糖罐舀起砂糖"
+          className="absolute z-22"
+          style={{
+            bottom: 'calc(24% - 4vh - min(48px, 5vw))',
+            left: 'calc(3% - min(48px, 5vw))',
+            width: 'calc(min(168px, 13vw) + 2 * min(48px, 5vw))',
+            height: 'calc(min(168px, 13vw) + 2 * min(48px, 5vw))',
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text');
+            if (id === 'spoon' && !spoonHasSugar) {
+              setSpoonHasSugar(true);
+            }
+          }}
+        />
+      )}
 
       {/* ── 左側：勺子（sugarInBowl 後回到原位靜態顯示空勺） ── */}
       <div
