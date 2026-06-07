@@ -147,7 +147,7 @@ export default function LuckyDrawGame() {
         {/* 返回鍵 */}
         <button
           onClick={() => router.push('/main')}
-          className="absolute top-4 left-4 z-40 flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)]"
+          className="fixed top-4 left-[104px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
         >
           ⬅ 返回柑仔店
         </button>
@@ -196,6 +196,7 @@ export default function LuckyDrawGame() {
                 <motion.div
                   key={i}
                   className="relative w-full h-full select-none cursor-pointer overflow-visible"
+                  title={!isFlipped && !isGameOver ? '點擊翻開這張符文' : undefined}
                   onClick={() => handleCardClick(i)}
                   whileHover={
                     !isFlipped && !isGameOver

@@ -171,7 +171,7 @@ export default function ScaleGame() {
       {/*返回主導覽按鈕 */}
       <button
         onClick={() => router.push('/main')}
-        className="absolute top-4 left-4 z-30 flex items-center justify-center rounded-3xl bg-white/90 px-4 py-2 shadow-md hover:bg-white text-gray-700 font-bold transition-all text-sm"
+        className="fixed top-4 left-[104px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
       >
         ← 返回柑仔店
       </button>
@@ -205,6 +205,7 @@ export default function ScaleGame() {
             <div
               draggable
               onDragStart={(e) => handleDragStart(e, 'scale_spoon')}
+              title="將勺子拖曳到豆袋舀起紅豆"
               className="absolute bottom-[24%] left-[72%] flex flex-col items-center cursor-grab active:cursor-grabbing transition-transform hover:scale-110"
             >
               <img 
@@ -224,9 +225,10 @@ export default function ScaleGame() {
             className="w-full h-full object-contain pointer-events-none"
           />
 
-          <div 
+          <div
             onDragOver={handleDragOver}
             onDrop={handleDropToScale}
+            title="將砝碼拖曳放上天秤右盤"
             className={`absolute top-[12%] right-[2%] w-[150px] h-[100px] rounded-full border-2 border-dashed transition-all flex flex-wrap gap-1 p-2 items-center justify-center z-10
               ${totalRightWeight > 0 ? 'border-amber-600 bg-amber-950/10' : 'border-transparent hover:border-amber-400 hover:bg-white/10'}`}
           >
@@ -264,8 +266,9 @@ export default function ScaleGame() {
             {availableWeights.map((item) => (
               <div
                 key={item.id}
-                draggable 
+                draggable
                 onDragStart={(e) => handleDragStart(e, item.id)}
+                title={`將 ${item.label} 砝碼拖曳到天秤右盤`}
                 className="flex flex-col items-center cursor-grab active:cursor-grabbing transition-all hover:-translate-y-1.5 hover:scale-105"
               >
                 <img 
@@ -333,6 +336,7 @@ export default function ScaleGame() {
             <div className="flex items-center justify-center w-[120px]">
               <button
                 onClick={handleQTESubmit}
+                title="趁指針在黃色區域時點擊！"
                 className="w-24 h-24 rounded-full bg-stone-950/70 backdrop-blur-md border-2 border-white/20 hover:bg-stone-950/90 active:scale-95 text-amber-50 hover:text-amber-300 font-black text-2xl shadow-[0_8px_25px_rgba(0,0,0,0.5)] flex items-center justify-center transition-all cursor-pointer tracking-widest"
               >
                 點擊

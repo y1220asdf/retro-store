@@ -23,6 +23,24 @@ export default function MainGame() {
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
 
+  // ==================== 👆 新手引導提示 ====================
+  const [showBackpackHint, setShowBackpackHint] = useState(false);
+  const [showNoteHint, setShowNoteHint] = useState(false);
+
+  // ==================== ✨ 已完成關卡追蹤（用於發光邊框） ====================
+  const [completedKeys, setCompletedKeys] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (!localStorage.getItem('hasSeenBackpackHint')) {
+      setShowBackpackHint(true);
+    }
+    const keys = new Set<string>();
+    ['hasFilm', 'hasTape', 'hasRecipe', 'hasBeans', 'hasSoup'].forEach(k => {
+      if (localStorage.getItem(k) === 'true') keys.add(k);
+    });
+    setCompletedKeys(keys);
+  }, []);
+
   // 當打開背包時，去 localStorage 檢查玩家是否有拿到道具
   useEffect(() => {
     if (isBackpackOpen) {
@@ -118,7 +136,7 @@ export default function MainGame() {
     { id: 'candy',    name: '哇！有好多不同顏色的糖果！',  href: '/candy',    itemKey: 'hasTape',   image: '/images/obj_candy.png',    style: { top: '53.6%', left: '19.4%', width: '6%', height: '13.8%' } },
     { id: 'calendar', name: '垃圾桶裡好像有什麼...？', href: '/calendar', itemKey: 'hasRecipe', image: '/images/obj_calendar.png', style: { top: '72.6%', left: '50.7%', width: '7%',  height: '20%' } },
     { id: 'scale',    name: '現在好少看到這種傳統的天秤喔...',     href: '/scale',    itemKey: 'hasBeans',  image: '/images/obj_scale.png',    style: { top: '52%', left: '34%', width: '15%', height: '15%' } },
-    { id: 'cooker',   name: '每個台灣人家裡都有的大同電鍋',   href: '/cooker',   itemKey: 'null',    image: '/images/obj_cooker.png',   style: { top: '50.3%', left: '59.9%', width: '7%',  height: '10.4%' } },
+    { id: 'cooker',   name: '每個台灣人家裡都有的大同電鍋',   href: '/cooker',   itemKey: 'hasSoup', image: '/images/obj_cooker.png',   style: { top: '50.3%', left: '59.9%', width: '7%',  height: '10.4%' } },
   ];
 
   {hotspots.map((spot) => (
@@ -210,26 +228,39 @@ export default function MainGame() {
             style={spot.style}
             title={spot.name}
           >
-            {/* 🎬 物件圖片層：加入 Framer Motion 動效 */}
-            <motion.div
-              className="w-full h-full relative flex items-center justify-center"
-              whileHover={{ 
-                scale: 1.03, 
-                // filter: "drop-shadow(0 0 10px rgba(255, 255, 255, 0.7)) brightness(1.1)" 
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <img 
-                src={spot.image} 
-                alt={spot.name} 
-                className="w-full h-full object-contain"
-              />
-
-              {/* 如果該關卡已經完成，可以加個小勾勾或特效 (選做)
-              {!DEV_MODE && spot.itemKey && localStorage.getItem(spot.itemKey) === 'true' && (
-                <span className="absolute -top-2 -right-2 text-xl">✅</span>
-              )} */}
-            </motion.div>
+            {/* 🎬 物件圖片層：外層管 scale，內層圖片管常駐發光 */}
+            {(() => {
+              const isCompleted = completedKeys.has(spot.itemKey);
+              return (
+                <motion.div
+                  className="w-full h-full relative flex items-center justify-center"
+                  whileHover={{ scale: 1.08 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <motion.img
+                    src={spot.image}
+                    alt={spot.name}
+                    className="w-full h-full object-contain"
+                    animate={!isCompleted ? {
+                      filter: [
+                        'drop-shadow(0 0 2px rgba(255,255,255,0.2))',
+                        'drop-shadow(0 0 10px rgba(255,255,255,0.85)) drop-shadow(0 0 22px rgba(255,255,255,0.4))',
+                        'drop-shadow(0 0 2px rgba(255,255,255,0.2))',
+                      ],
+                    } : { filter: 'none' }}
+                    transition={!isCompleted ? {
+                      duration: 2.4,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    } : { duration: 0.3 }}
+                    whileHover={{
+                      filter: 'drop-shadow(0 0 14px rgba(255,255,255,0.95)) drop-shadow(0 0 28px rgba(255,255,255,0.55)) brightness(1.15)',
+                      transition: { duration: 0.15 },
+                    }}
+                  />
+                </motion.div>
+              );
+            })()}
 
             {/* 開發模式文字 */}
             {DEV_MODE && <span className="absolute bg-black/70 text-white px-1 rounded text-[10px]">{spot.id}</span>}
@@ -239,14 +270,21 @@ export default function MainGame() {
         {/* ==================== 圖片內建背包的透明熱區 ==================== */}
         <button
           onClick={(e) => {
-            e.stopPropagation(); 
-            playClickSound();    
+            e.stopPropagation();
+            playClickSound();
             setIsBackpackOpen(true);
+            if (showBackpackHint) {
+              setShowBackpackHint(false);
+              localStorage.setItem('hasSeenBackpackHint', 'true');
+              if (!localStorage.getItem('hasSeenNoteHint')) {
+                setShowNoteHint(true);
+              }
+            }
           }}
-          className={`absolute cursor-pointer rounded-full z-20 flex items-center justify-center text-[10px] sm:text-xs font-bold
-            ${DEV_MODE 
-              ? 'border-2 border-blue-500 bg-blue-500/30 text-blue-200' 
-              : 'hover:bg-white/10 active:scale-90'
+          className={`absolute cursor-pointer rounded-full z-20 flex items-center justify-center text-[10px] sm:text-xs font-bold transition-all duration-200
+            ${DEV_MODE
+              ? 'border-2 border-blue-500 bg-blue-500/30 text-blue-200'
+              : 'hover:bg-white/10 active:scale-90 hover:[filter:drop-shadow(0_0_8px_rgba(255,255,255,0.85))_drop-shadow(0_0_18px_rgba(255,255,255,0.4))]'
             }
           `}
           style={{ top: '80.5%', left: '91.7%', width: '8.7%', height: '15%' }}
@@ -254,6 +292,19 @@ export default function MainGame() {
         >
           {DEV_MODE && <span className="bg-black/70 px-1 rounded">背包</span>}
         </button>
+
+        {/* 👆 背包引導手指 — 直接覆蓋在背包熱區上 */}
+        {showBackpackHint && (
+          <div
+            className="absolute pointer-events-none z-30 animate-bounce flex flex-col items-center justify-center gap-0.5"
+            style={{ top: '80.5%', left: '91.7%', width: '8.7%', height: '15%' }}
+          >
+            <span className="text-xl leading-none drop-shadow-lg">👆</span>
+            <span className="text-[8px] font-bold text-white bg-black/65 px-1.5 py-0.5 rounded-full whitespace-nowrap backdrop-blur-sm leading-tight">
+              點開背包
+            </span>
+          </div>
+        )}
 
 
         {/* ==================== 🚨 自訂重複遊玩提示框 (UI Modal) ==================== */}
@@ -332,15 +383,24 @@ export default function MainGame() {
               <div className="w-full max-w-xl flex-1 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3 sm:gap-4 bg-amber-950/10 p-4 sm:p-5 rounded-xl border border-amber-900/10 content-start overflow-y-auto">
                 
                 {/* 第 1 格：便條紙 (預設道具，可點擊查看提示) */}
-                <div 
+                <div
                   onClick={(e) => {
                     e.stopPropagation();
                     playClickSound();
                     setShowNoteModal(true);
+                    if (showNoteHint) {
+                      setShowNoteHint(false);
+                      localStorage.setItem('hasSeenNoteHint', 'true');
+                    }
                   }}
                   className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-pointer hover:bg-white/60 transition-colors"
                 >
                   <span className="text-3xl sm:text-4xl transition-transform group-hover:scale-110 group-active:scale-95" title="阿嬤的便條紙 (點擊查看)">📝</span>
+                  {showNoteHint && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none animate-bounce z-10">
+                      <span className="text-2xl drop-shadow-lg">👆</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 第 2 格：錄音帶 (點擊播放音效) */}
@@ -374,7 +434,7 @@ export default function MainGame() {
                 >
                   {hasRecipe ? (
                     <img
-                      src="/images/scale_menu.webp"
+                      src="/images/scale_menu.png"
                       alt="紅豆湯秘方"
                       title="紅豆湯秘方 (點擊放大)"
                       className="w-[70%] h-[70%] object-contain transition-transform group-hover:scale-110 group-active:scale-95"
@@ -471,7 +531,7 @@ export default function MainGame() {
                 ✕
               </button>
               <img 
-                src="/images/scale_menu.webp" 
+                src="/images/scale_menu.png" 
                 alt="紅豆湯秘方放大圖" 
                 className="max-w-full max-h-[80vh] object-contain rounded-xl shadow-2xl bg-white/10"
               />

@@ -7,28 +7,30 @@ type ResultType = 'perfect' | 'overcooked' | 'undercooked';
 
 // ─── Image paths ──────────────────────────────────────────
 const IMG = {
-  bg:                    '/images/cooker_bg.webp',
+  bg:                    '/images/cooker_bg.png',
   // Cooker open states (bowl is part of each image)
-  cookerBody:            '/images/cooker_body.webp',           // 無蓋、空碗
-  cookerBodyBeans:       '/images/cooker_body_beans.webp',     // 無蓋、碗有紅豆
-  cookerBodySugar:       '/images/cooker_body_sugar.webp',     // 無蓋、碗有紅豆+糖
-  cookerBodySoup:        '/images/cooker_body_soup.webp',      // 無蓋、碗有紅豆+糖+水
-  cookerBodyWater:       '/images/cooker_body_water.webp',     // 無蓋、內鍋加水+碗有紅豆+糖+水
+  cookerBody:            '/images/cooker_body.png',           // 無蓋、空碗
+  cookerBodyBeans:       '/images/cooker_body_beans.png',     // 無蓋、碗有紅豆
+  cookerBodySugar:       '/images/cooker_body_sugar.png',     // 無蓋、碗有紅豆+糖
+  cookerBodySoup:        '/images/cooker_body_soup.png',      // 無蓋、碗有紅豆+糖+水
+  cookerBodyWater:       '/images/cooker_body_water.png',     // 無蓋、內鍋加水+碗有紅豆+糖+水
   // Cooker lid states
-  cookerLidOn:           '/images/cooker_lid_on.webp',
-  cookerLidOnCooking:    '/images/cooker_lid_on_cooking.webp',
+  cookerLidOn:           '/images/cooker_lid_on.png',
+  cookerLidOnCooking:    '/images/cooker_lid_on_cooking.png',
   // Lid on table
-  lid:                   '/images/cooker_lid.webp',
+  lid:                   '/images/cooker_lid.png',
   // Water objects
-  bottle:                '/images/cooker_bottle.webp',
-  cupEmpty:              '/images/cooker_cup_empty.webp',
-  cupFull:               '/images/cooker_cup_full.webp',
+  bottle:                '/images/cooker_bottle.png',
+  cupEmpty:              '/images/cooker_cup.png',          // 空水杯
+  cupFull:               '/images/cooker_cup_full.png',
   // Sugar
-  sugar:                 '/images/cooker_sugar.webp',
+  sugar:                 '/images/cooker_sugar.png',
+  // Beans (shared asset)
+  beans:                 '/images/beans_big.webp',
   // Result bowls
-  resultPerfect:         '/images/cooker_result_perfect.webp',
-  resultOvercooked:      '/images/cooker_result_overcooked.webp',
-  resultUndercooked:     '/images/cooker_result_undercooked.webp',
+  resultPerfect:         '/images/cooker_result_perfect.png',
+  resultOvercooked:      '/images/cooker_result_overcooked.png',
+  resultUndercooked:     '/images/cooker_result_undercooked.png',
 } as const;
 
 // ─── Cooker image (state-driven, bowl included) ───────────
@@ -56,7 +58,7 @@ function CookerImg({ lidOn, beansInBowl, sugarInBowl, waterInBowl, waterInCooker
       <img
         src={src}
         alt="電鍋"
-        className="w-[220px] h-auto object-contain drop-shadow-2xl select-none"
+        className="w-[330px] h-auto object-contain drop-shadow-2xl select-none"
         draggable={false}
       />
       {clickable && (
@@ -77,7 +79,7 @@ function BottleImg({ selected, onClick }: { selected: boolean; onClick?: () => v
       <img
         src={IMG.bottle}
         alt="水瓶"
-        className="w-[68px] h-auto object-contain select-none"
+        className="w-[204px] h-auto object-contain select-none"
         draggable={false}
       />
       {selected && (
@@ -107,57 +109,39 @@ function CupImg({ filled, onClick, isDraggable, onDragStart }: {
       <img
         src={filled ? IMG.cupFull : IMG.cupEmpty}
         alt={filled ? '裝滿水的水杯' : '空水杯'}
-        className="w-[52px] h-auto object-contain select-none"
+        className="w-[117px] h-auto object-contain select-none"
         draggable={false}
       />
-      {filled && (
-        <span className="text-[10px] text-sky-300 font-bold mt-1 bg-black/35 px-2 rounded-full">
-          拖曳使用
-        </span>
-      )}
     </div>
   );
 }
 
-// ─── Sugar Jar ────────────────────────────────────────────
-function SugarImg({ onDragStart }: { onDragStart: (e: React.DragEvent) => void }) {
+// ─── Sugar Jar (static display, spoon is the interactive element) ────────────
+function SugarImg() {
   return (
-    <div
-      draggable
-      onDragStart={onDragStart}
-      className="flex flex-col items-center cursor-grab active:cursor-grabbing hover:scale-110 transition-transform"
-    >
-      <img
-        src={IMG.sugar}
-        alt="砂糖"
-        className="w-[56px] h-auto object-contain select-none"
-        draggable={false}
-      />
-      <span className="text-[10px] text-amber-300 mt-1 font-bold bg-black/35 px-2 rounded-full">
-        拖曳加糖
-      </span>
-    </div>
+    <img
+      src={IMG.sugar}
+      alt="砂糖"
+      className="w-[168px] h-auto object-contain select-none"
+      draggable={false}
+    />
   );
 }
 
 // ─── Lid on table ─────────────────────────────────────────
-function LidImg({ onClick }: { onClick?: () => void }) {
+function LidImg({ onDragStart }: { onDragStart?: (e: React.DragEvent) => void }) {
   return (
     <div
-      className={`flex flex-col items-center ${onClick ? 'cursor-pointer hover:scale-105 transition-transform' : ''}`}
-      onClick={onClick}
+      draggable={!!onDragStart}
+      onDragStart={onDragStart}
+      className={`flex flex-col items-center select-none ${onDragStart ? 'cursor-grab active:cursor-grabbing hover:scale-105 transition-transform' : ''}`}
     >
       <img
         src={IMG.lid}
         alt="電鍋蓋"
-        className="w-[150px] h-auto object-contain drop-shadow-xl select-none"
+        className="w-[225px] h-auto object-contain drop-shadow-xl"
         draggable={false}
       />
-      {onClick && (
-        <span className="text-[10px] text-amber-300 mt-1 font-bold bg-black/35 px-2 py-0.5 rounded-full">
-          點擊蓋上鍋蓋
-        </span>
-      )}
     </div>
   );
 }
@@ -172,7 +156,7 @@ function ResultBowlImg({ type }: { type: ResultType }) {
     <img
       src={src}
       alt="紅豆湯"
-      className="w-[200px] h-auto object-contain drop-shadow-xl"
+      className="w-[240px] h-auto object-contain drop-shadow-xl"
       draggable={false}
     />
   );
@@ -184,39 +168,43 @@ function DigitalTimer({ seconds, visible }: { seconds: number; visible: boolean 
   return (
     <div className="flex flex-col items-center">
       <div
-        className="relative rounded-2xl overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.8)] border-2 border-amber-900/60"
+        className="relative rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.8)] border-4 border-amber-900/60"
         style={{ background: 'linear-gradient(135deg, #2a1a06, #1a0e04)' }}
       >
-        <div className="m-3 rounded-xl overflow-hidden border border-black/60"
-          style={{ background: '#0a0a04', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.8)' }}
+        <div className="m-6 rounded-2xl overflow-hidden border-2 border-black/60 relative"
+          style={{ background: '#0a0a04', boxShadow: 'inset 0 4px 16px rgba(0,0,0,0.8)' }}
         >
-          <div className="px-6 py-3 flex flex-col items-center" style={{ minWidth: '160px' }}>
-            <p className="text-[10px] tracking-[0.3em] mb-1" style={{ color: '#5a7040' }}>秒數</p>
-            <div className="relative">
-              <p className="font-mono font-black text-5xl leading-none"
-                style={{ color: '#c8f040', textShadow: '0 0 12px #a0d020, 0 0 24px #80b010', letterSpacing: '0.05em' }}
+          <div className="px-12 py-6 flex flex-col items-center" style={{ width: '360px' }}>
+            <p className="text-xl tracking-[0.3em] mb-2" style={{ color: '#5a7040' }}>秒數</p>
+            <div className="w-full flex justify-center">
+              <p className="font-mono font-black leading-none text-center"
+                style={{
+                  fontSize: '6rem',
+                  color: '#c8f040', textShadow: '0 0 24px #a0d020, 0 0 48px #80b010',
+                  letterSpacing: '0.05em', width: '5ch',
+                }}
               >
                 {display}
               </p>
-              {/* Cover slides in after 5s */}
-              <div
-                className="absolute inset-0 rounded flex items-center justify-center transition-all duration-700"
-                style={{
-                  background: '#0a0a04',
-                  opacity: visible ? 0 : 1,
-                  transform: visible ? 'scaleY(0)' : 'scaleY(1)',
-                  transformOrigin: 'top',
-                }}
-              >
-                <p className="text-[10px] tracking-[0.2em]" style={{ color: '#3a5020' }}>-- --</p>
-              </div>
             </div>
-            <p className="text-[9px] tracking-[0.25em] mt-1" style={{ color: '#3a5020' }}>SEC</p>
+            <p className="text-lg tracking-[0.25em] mt-2" style={{ color: '#3a5020' }}>SEC</p>
+          </div>
+          {/* Cover slides in after 5s — covers the entire dark screen */}
+          <div
+            className="absolute inset-0 rounded-2xl flex items-center justify-center transition-all duration-700"
+            style={{
+              background: '#0a0a04',
+              opacity: visible ? 0 : 1,
+              transform: visible ? 'scaleY(0)' : 'scaleY(1)',
+              transformOrigin: 'top',
+            }}
+          >
+            <p className="text-xl tracking-[0.2em]" style={{ color: '#3a5020' }}>-- --</p>
           </div>
         </div>
-        <p className="text-center text-[8px] tracking-[0.4em] pb-2" style={{ color: '#5a3a10' }}>TIMER</p>
+        <p className="text-center text-base tracking-[0.4em] pb-3" style={{ color: '#5a3a10' }}>TIMER</p>
       </div>
-      <p className={`mt-2 text-[10px] font-bold tracking-wider text-center ${visible ? 'text-amber-400/70' : 'text-amber-600/60 animate-pulse'}`}>
+      <p className={`mt-3 text-2xl font-bold tracking-wider text-center ${visible ? 'text-amber-400/70' : 'text-amber-600/60 animate-pulse'}`}>
         {visible ? '記住這個感覺！' : '默數到 20 秒…'}
       </p>
     </div>
@@ -231,12 +219,14 @@ const STEAM_POS = [
   { x: 53, size: 15, dur: 2.3, delay: 0.6 }, { x: 57, size: 18, dur: 1.7, delay: 1.1 },
 ];
 const FULLSCREEN_STEAM = [
-  { x: 10, y: 20, s: 60, dur: 1.4, delay: 0.0 }, { x: 30, y: 50, s: 80, dur: 1.8, delay: 0.2 },
-  { x: 55, y: 10, s: 100, dur: 2.0, delay: 0.5 }, { x: 75, y: 60, s: 70, dur: 1.6, delay: 0.1 },
-  { x: 20, y: 70, s: 90, dur: 1.9, delay: 0.4 }, { x: 85, y: 30, s: 65, dur: 1.5, delay: 0.7 },
-  { x: 42, y: 40, s: 85, dur: 2.1, delay: 0.3 }, { x: 65, y: 80, s: 75, dur: 1.7, delay: 0.6 },
-  { x: 5,  y: 45, s: 55, dur: 2.2, delay: 0.9 }, { x: 90, y: 55, s: 95, dur: 1.3, delay: 0.2 },
-  { x: 35, y: 25, s: 110, dur: 1.8, delay: 0.8 }, { x: 60, y: 15, s: 78, dur: 2.0, delay: 1.0 },
+  { x: 10, y: 20, s: 60,  dur: 2.6, delay: 0.0 }, { x: 30, y: 50, s: 80,  dur: 3.2, delay: 0.2 },
+  { x: 55, y: 10, s: 100, dur: 3.6, delay: 0.5 }, { x: 75, y: 60, s: 70,  dur: 2.8, delay: 0.1 },
+  { x: 20, y: 70, s: 90,  dur: 3.4, delay: 0.4 }, { x: 85, y: 30, s: 65,  dur: 2.7, delay: 0.7 },
+  { x: 42, y: 40, s: 85,  dur: 3.8, delay: 0.3 }, { x: 65, y: 80, s: 75,  dur: 3.0, delay: 0.6 },
+  { x: 5,  y: 45, s: 55,  dur: 4.0, delay: 0.9 }, { x: 90, y: 55, s: 95,  dur: 2.5, delay: 0.2 },
+  { x: 35, y: 25, s: 110, dur: 3.3, delay: 0.8 }, { x: 60, y: 15, s: 78,  dur: 3.7, delay: 1.0 },
+  { x: 15, y: 35, s: 72,  dur: 3.1, delay: 1.2 }, { x: 50, y: 65, s: 92,  dur: 2.9, delay: 0.3 },
+  { x: 70, y: 20, s: 68,  dur: 4.2, delay: 0.6 }, { x: 25, y: 85, s: 105, dur: 3.5, delay: 1.4 },
 ];
 
 function SteamParticles({ active, fullScreen }: { active: boolean; fullScreen: boolean }) {
@@ -252,9 +242,13 @@ function SteamParticles({ active, fullScreen }: { active: boolean; fullScreen: b
         }
         @keyframes steamBig {
           0%   { transform: scale(0.3); opacity: 0; }
-          20%  { opacity: 0.7; }
-          80%  { transform: scale(1.8); opacity: 0.4; }
-          100% { transform: scale(2.5); opacity: 0; }
+          15%  { opacity: 0.75; }
+          70%  { transform: scale(2.0); opacity: 0.5; }
+          100% { transform: scale(3.0); opacity: 0; }
+        }
+        @keyframes whiteFlashIn {
+          0%   { opacity: 0; }
+          100% { opacity: 1; }
         }
       `}</style>
       {active && !fullScreen && STEAM_POS.map((p, i) => (
@@ -272,8 +266,8 @@ function SteamParticles({ active, fullScreen }: { active: boolean; fullScreen: b
 }
 
 // ─── Result Modal ─────────────────────────────────────────
-function ResultModal({ result, elapsedSec, router }: {
-  result: ResultType; elapsedSec: number; router: ReturnType<typeof useRouter>;
+function ResultModal({ result, elapsedSec, router, onReset }: {
+  result: ResultType; elapsedSec: number; router: ReturnType<typeof useRouter>; onReset: () => void;
 }) {
   const info = {
     perfect: {
@@ -290,9 +284,9 @@ function ResultModal({ result, elapsedSec, router }: {
     },
     undercooked: {
       emoji: '😐', title: '普通的紅豆水...',
-      desc: `只煮了 ${elapsedSec.toFixed(1)} 秒，紅豆還沒熟，全沉在碗底。\n請重新收集材料再試試吧！`,
-      btnLabel: '回去準備材料',
-      action: () => { localStorage.removeItem('hasBeans'); router.push('/main'); },
+      desc: `只煮了 ${elapsedSec.toFixed(1)} 秒，紅豆還沒熟，全沉在碗底。\n再試一次！`,
+      btnLabel: '重新開始',
+      action: onReset,
     },
   }[result];
 
@@ -329,6 +323,21 @@ export default function CookerGame() {
   const [missingItems, setMissingItems]   = useState<string[]>([]);
   const [stage, setStage]                 = useState<GameStage>('prep');
 
+  // ── 背包 ──
+  const [isBackpackOpen, setIsBackpackOpen] = useState(false);
+  const [bpTape,    setBpTape]    = useState(false);
+  const [bpFilm,    setBpFilm]    = useState(false);
+  const [bpRecipe,  setBpRecipe]  = useState(false);
+  const [bpBeans,   setBpBeans]   = useState(false);
+
+  useEffect(() => {
+    if (!isBackpackOpen) return;
+    setBpTape  (localStorage.getItem('hasTape')   === 'true');
+    setBpFilm  (localStorage.getItem('hasFilm')   === 'true');
+    setBpRecipe(localStorage.getItem('hasRecipe') === 'true');
+    setBpBeans (localStorage.getItem('hasBeans')  === 'true');
+  }, [isBackpackOpen]);
+
   const [beansInBowl, setBeansInBowl]     = useState(false);
   const [waterSelected, setWaterSelected] = useState(false);
   const [cupFilled, setCupFilled]         = useState(false);
@@ -336,8 +345,12 @@ export default function CookerGame() {
   const [sugarInBowl, setSugarInBowl]     = useState(false);
   const [waterInCooker, setWaterInCooker] = useState(false);
   const [lidOn, setLidOn]                 = useState(false);
+
+  // ── 砂糖勺子 ──
+  const [spoonHasSugar, setSpoonHasSugar]   = useState(false);
   const [showMissingPopup, setShowMissingPopup]           = useState(false);
   const [showIngredientsDonePopup, setShowIngredientsDonePopup] = useState(false);
+  const [showAllReadyPopup, setShowAllReadyPopup]         = useState(false);
 
   const [elapsedMs, setElapsedMs]         = useState(0);
   const [showTimer, setShowTimer]         = useState(true);
@@ -345,6 +358,7 @@ export default function CookerGame() {
   const rafRef       = useRef<number>(0);
 
   const [steamFull, setSteamFull]         = useState(false);
+  const [showWhiteFlash, setShowWhiteFlash] = useState(false);
   const [result, setResult]               = useState<ResultType | null>(null);
 
   // ── Lock check ──
@@ -372,36 +386,50 @@ export default function CookerGame() {
     return () => { clearTimeout(hide); cancelAnimationFrame(rafRef.current); };
   }, [stage]);
 
+  const handleReset = () => {
+    setStage('prep');
+    setBeansInBowl(false);
+    setWaterSelected(false);
+    setCupFilled(false);
+    setWaterInBowl(false);
+    setSugarInBowl(false);
+    setWaterInCooker(false);
+    setLidOn(false);
+    setSpoonHasSugar(false);
+    setElapsedMs(0);
+    setShowTimer(true);
+    setSteamFull(false);
+    setShowWhiteFlash(false);
+    setResult(null);
+  };
+
   const handleCookerClick = () => {
     if (stage !== 'cooking') return;
     cancelAnimationFrame(rafRef.current);
     const finalMs = performance.now() - startTimeRef.current;
     setElapsedMs(finalMs);
     setSteamFull(true);
+    // 2.5s 後：全白畫面淡入
+    setTimeout(() => setShowWhiteFlash(true), 2500);
+    // 3.5s 後：顯示結果，白幕開始淡出
     setTimeout(() => {
       const sec = finalMs / 1000;
       setResult(sec >= 18 && sec <= 22 ? 'perfect' : sec > 22 ? 'overcooked' : 'undercooked');
       setSteamFull(false);
       setStage('result');
-    }, 1600);
-  };
-
-  const handlePutLid = () => {
-    if (!beansInBowl || !waterInBowl || !sugarInBowl || !waterInCooker) {
-      setShowMissingPopup(true); return;
-    }
-    setLidOn(true); setStage('confirm');
+      setTimeout(() => setShowWhiteFlash(false), 200);
+    }, 3500);
   };
 
   const elapsedSec    = elapsedMs / 1000;
   const allPrepDone   = beansInBowl && waterInBowl && sugarInBowl && waterInCooker;
 
   const stepHint = (() => {
-    if (!beansInBowl)   return '點擊「紅豆」放入電鍋內的瓷碗';
-    if (!sugarInBowl)   return '將砂糖拖入電鍋的碗中';
+    if (!beansInBowl)   return '將「紅豆」拖曳放入電鍋的瓷碗';
+    if (!sugarInBowl)   return spoonHasSugar ? '將裝有砂糖的勺子拖曳放入電鍋' : '將勺子拖曳到砂糖罐舀起砂糖';
     if (!waterInBowl)   return !cupFilled ? '點擊水瓶→水杯，再將水杯拖入電鍋的碗' : '將水杯拖入電鍋的碗';
     if (!waterInCooker) return !cupFilled ? '再次點擊水瓶→水杯，將水杯拖入電鍋內鍋' : '將水杯拖入電鍋內鍋';
-    return '點擊鍋蓋蓋上電鍋';
+    return '將鍋蓋拖曳至電鍋上';
   })();
 
   return (
@@ -411,8 +439,8 @@ export default function CookerGame() {
     >
       {/* Back button */}
       <button onClick={() => router.push('/main')}
-        className="absolute top-4 left-4 z-30 flex items-center justify-center rounded-3xl bg-white/90 px-4 py-2 shadow-md hover:bg-white text-gray-700 font-bold transition-all text-sm"
-      >← 返回柑仔店</button>
+        className="fixed top-4 left-[104px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
+      >⬅ 返回柑仔店</button>
 
       {/* Step hint */}
       {stage === 'prep' && (
@@ -428,72 +456,96 @@ export default function CookerGame() {
 
       <SteamParticles active={stage === 'cooking'} fullScreen={steamFull} />
 
-      {/* ── Beans from backpack ── */}
+      {/* ── 全白過場 ── */}
+      <div
+        className="fixed inset-0 z-[55] pointer-events-none bg-white transition-opacity duration-500"
+        style={{ opacity: showWhiteFlash ? 1 : 0 }}
+      />
+
+      {/* ── Digital timer（UI overlay，不在桌面） ── */}
+      {stage === 'cooking' && (
+        <div className="absolute top-16 right-4 z-40">
+          <DigitalTimer seconds={elapsedSec} visible={showTimer} />
+        </div>
+      )}
+
+      {/*
+        ══════════════════════════════════════════════════════
+        可互動物件 — 桌面容器上方（食材區）
+        調整 bottom 值讓物件對齊背景圖中桌子以上的區域。
+        ══════════════════════════════════════════════════════
+      */}
+
+      {/* ── 左側：紅豆（拖曳至電鍋） ── */}
       {!beansInBowl && (
-        <div className="absolute z-20 flex flex-col items-center cursor-pointer hover:scale-110 active:scale-95 transition-transform"
-          style={{ bottom: '47%', left: '7%' }}
-          onClick={() => setBeansInBowl(true)}
+        <div
+          draggable
+          onDragStart={(e) => e.dataTransfer.setData('text', 'beans')}
+          title="將紅豆拖曳放入電鍋"
+          className="absolute z-20 flex flex-col items-center select-none cursor-grab active:cursor-grabbing hover:scale-105 transition-transform"
+          style={{ bottom: 'calc(42% - 100px)', left: '24%' }}
         >
-          <img src="/images/beans_big.webp" alt="紅豆" className="w-14 h-14 object-contain drop-shadow-lg" draggable={false} />
-          <span className="text-[10px] text-amber-300 mt-1 font-bold bg-black/40 px-2 py-0.5 rounded-full">背包的紅豆</span>
+          <img src={IMG.beans} alt="紅豆" className="w-[168px] h-[168px] object-contain drop-shadow-lg" draggable={false} />
         </div>
       )}
 
-      {/* ── Sugar (appears once beans are in bowl) ── */}
-      {beansInBowl && !sugarInBowl && (
-        <div className="absolute z-20" style={{ bottom: '47%', left: '5%' }}>
-          <SugarImg onDragStart={(e) => e.dataTransfer.setData('text', 'sugar')} />
-        </div>
-      )}
-
-      {/* ── Rice cooker (center) — bowl is part of the image ── */}
-      <div className="absolute z-20" style={{ bottom: '36%', left: '50%', transform: 'translateX(-50%)' }}>
-        <CookerImg
-          lidOn={lidOn}
-          beansInBowl={beansInBowl}
-          sugarInBowl={sugarInBowl}
-          waterInBowl={waterInBowl}
-          waterInCooker={waterInCooker}
-          cooking={stage === 'cooking'}
-          clickable={stage === 'cooking'}
-          onClick={handleCookerClick}
-          onDrop={(e) => {
-            e.preventDefault();
-            const id = e.dataTransfer.getData('text');
-            // Step 2: 砂糖拖入碗（豆已入碗，尚未加糖）
-            if (id === 'sugar' && beansInBowl && !sugarInBowl) {
-              setSugarInBowl(true);
-            }
-            // Step 3: 水杯拖入碗（糖已入碗，尚未加水）→ 觸發 popup
-            if (id === 'cup' && cupFilled && sugarInBowl && !waterInBowl) {
-              setWaterInBowl(true); setCupFilled(false);
-              setShowIngredientsDonePopup(true);
-            }
-            // Step 5: 水杯拖入電鍋內鍋（碗材料已完成）
-            if (id === 'cup' && cupFilled && waterInBowl && !waterInCooker) {
-              setWaterInCooker(true); setCupFilled(false);
-            }
-          }}
-        />
+      {/* ── 左側：砂糖罐（sugarInBowl 後靜態顯示） ── */}
+      <div
+        title={!sugarInBowl ? '將勺子拖曳到砂糖罐舀起砂糖' : undefined}
+        className="absolute z-20 p-8"
+        style={{ bottom: 'calc(24% - 36px)', left: 'calc(3% + 4px)' }}
+        onDragOver={!sugarInBowl ? (e) => e.preventDefault() : undefined}
+        onDrop={!sugarInBowl ? (e) => {
+          e.preventDefault();
+          const id = e.dataTransfer.getData('text');
+          if (id === 'spoon' && !spoonHasSugar) {
+            setSpoonHasSugar(true);
+          }
+        } : undefined}
+      >
+        <SugarImg />
       </div>
 
-      {/* ── Lid on table (appears when all prep done) ── */}
-      {allPrepDone && !lidOn && stage === 'prep' && (
-        <div className="absolute z-20" style={{ bottom: '48%', left: '50%', transform: 'translateX(-50%) translateX(-140px)' }}>
-          <LidImg onClick={handlePutLid} />
+      {/* ── 左側：勺子（sugarInBowl 後回到原位靜態顯示空勺） ── */}
+      <div
+        draggable={!sugarInBowl}
+        onDragStart={!sugarInBowl ? (e) => e.dataTransfer.setData('text', 'spoon') : undefined}
+        title={!sugarInBowl ? (spoonHasSugar ? '將裝有砂糖的勺子拖曳放入電鍋' : '將勺子拖到砂糖罐舀糖') : undefined}
+        className={`absolute z-21 select-none ${!sugarInBowl ? 'cursor-grab active:cursor-grabbing hover:scale-110 transition-transform' : ''}`}
+        style={{ bottom: 'calc(24% + 20px)', left: 'calc(3% + 184px)' }}
+      >
+        <img
+          src={spoonHasSugar ? '/images/cooker_spoon.png' : '/images/scale_spoon.webp'}
+          alt="木勺"
+          className={`w-20 h-20 object-contain drop-shadow-md ${spoonHasSugar ? 'drop-shadow-[0_0_10px_rgba(251,191,36,0.9)]' : ''}`}
+          draggable={false}
+        />
+        {spoonHasSugar && (
+          <span className="block text-center text-[10px] text-amber-300 font-bold mt-0.5">已裝糖</span>
+        )}
+      </div>
+
+      {/* ── 左側：鍋蓋（一開始就出現，位於紅豆上方，拖曳至電鍋） ── */}
+      {!lidOn && (
+        <div title="將鍋蓋拖曳蓋上電鍋" className="absolute z-20" style={{ bottom: 'calc(60% - 196px)', left: 'calc(3% + 84px)' }}>
+          <LidImg onDragStart={(e) => e.dataTransfer.setData('text', 'lid')} />
         </div>
       )}
 
-      {/* ── Water bottle ── */}
-      <div className="absolute z-20" style={{ bottom: '37%', right: '14%' }}>
+      {/* ── 右側：水瓶 ── */}
+      <div title={waterInBowl && waterInCooker ? '材料都備齊了！' : '點擊水瓶取水'} className="absolute z-20" style={{ bottom: 'calc(48% - 60px)', right: '21%' }}>
         <BottleImg
           selected={waterSelected}
-          onClick={!waterSelected && !cupFilled ? () => setWaterSelected(true) : undefined}
+          onClick={
+            waterInBowl && waterInCooker
+              ? () => setShowAllReadyPopup(true)
+              : (!waterSelected && !cupFilled ? () => setWaterSelected(true) : undefined)
+          }
         />
       </div>
 
-      {/* ── Water cup ── */}
-      <div className="absolute z-20" style={{ bottom: '36%', right: '6%' }}>
+      {/* ── 右側：水杯（水瓶下方，靠攏電鍋） ── */}
+      <div title={cupFilled ? '將水杯拖曳放入電鍋' : (waterSelected ? '點擊水杯裝水' : '先點選水瓶')} className="absolute z-20" style={{ bottom: 'calc(40% - 60px)', right: '17%' }}>
         <CupImg
           filled={cupFilled}
           onClick={waterSelected && !cupFilled ? () => { setCupFilled(true); setWaterSelected(false); } : undefined}
@@ -502,10 +554,113 @@ export default function CookerGame() {
         />
       </div>
 
-      {/* ── Digital timer ── */}
-      {stage === 'cooking' && (
-        <div className="absolute top-16 right-4 z-40">
-          <DigitalTimer seconds={elapsedSec} visible={showTimer} />
+      {/*
+        ══════════════════════════════════════════
+        桌面區域 — TABLE SURFACE ZONE
+        調整 `top` 讓電鍋對齊 cooker_bg.png 裡的木桌：
+          - top 越大 → 電鍋整體下移
+          - top 越小 → 電鍋整體上移
+        目前預設：top: calc(48% - 150px)
+        ══════════════════════════════════════════
+      */}
+      <div className="absolute inset-x-0 z-20 pointer-events-none" style={{ top: 'calc(48% - 150px)', bottom: '4%' }}>
+
+        {/* ── 中央：電鍋（碗已合併入圖） ── */}
+        <div title={stage === 'cooking' ? '點擊電鍋停止計時！' : undefined} className="absolute pointer-events-auto" style={{ top: '4%', left: '50%', transform: 'translateX(-50%)' }}>
+          <CookerImg
+            lidOn={lidOn}
+            beansInBowl={beansInBowl}
+            sugarInBowl={sugarInBowl}
+            waterInBowl={waterInBowl}
+            waterInCooker={waterInCooker}
+            cooking={stage === 'cooking'}
+            clickable={stage === 'cooking'}
+            onClick={handleCookerClick}
+            onDrop={(e) => {
+              e.preventDefault();
+              const id = e.dataTransfer.getData('text');
+              // Step 1: 紅豆拖入電鍋的碗
+              if (id === 'beans' && !beansInBowl) {
+                setBeansInBowl(true);
+              }
+              // Step 2: 裝糖勺子拖入碗（豆已入碗，勺子已裝糖，尚未加糖）
+              if (id === 'spoon' && spoonHasSugar && beansInBowl && !sugarInBowl) {
+                setSugarInBowl(true);
+                setSpoonHasSugar(false);
+              }
+              // Step 3: 水杯拖入碗（糖已入碗，尚未加水）→ 觸發 popup
+              if (id === 'cup' && cupFilled && sugarInBowl && !waterInBowl) {
+                setWaterInBowl(true); setCupFilled(false);
+                setShowIngredientsDonePopup(true);
+              }
+              // Step 5: 水杯拖入電鍋內鍋（碗材料已完成）
+              if (id === 'cup' && cupFilled && waterInBowl && !waterInCooker) {
+                setWaterInCooker(true); setCupFilled(false);
+              }
+              // 蓋上鍋蓋：拖曳鍋蓋至電鍋（材料需全部備齊）
+              if (id === 'lid' && !lidOn) {
+                if (allPrepDone) {
+                  setLidOn(true); setStage('confirm');
+                } else {
+                  setShowMissingPopup(true);
+                }
+              }
+            }}
+          />
+        </div>
+
+      </div>{/* end TABLE SURFACE ZONE */}
+
+      {/* ── 背包熱區（對齊 cooker_bg 右下角的背包圖示）
+           位置參考 main/page.tsx 的背包熱區，如需微調請調整 top/left/width/height ── */}
+      <button
+        onClick={() => setIsBackpackOpen(true)}
+        className="absolute z-30 cursor-pointer"
+        style={{ top: '80.5%', left: '91.7%', width: '8.7%', height: '15%' }}
+        title="打開背包"
+      />
+
+      {/* ── 背包 Modal ── */}
+      {isBackpackOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="absolute inset-0 cursor-pointer" onClick={() => setIsBackpackOpen(false)} />
+          <div className="relative flex flex-col items-center w-[85%] max-w-2xl max-h-[500px] rounded-2xl bg-[#eedcb3] p-6 shadow-2xl border-4 border-amber-900/40 select-none">
+            <h2 className="text-xl font-bold text-amber-900 mb-4 tracking-wider">🎒 我的背包</h2>
+            <button
+              onClick={() => setIsBackpackOpen(false)}
+              className="absolute top-3 right-4 text-2xl font-bold text-amber-900 hover:text-red-600 transition-colors"
+            >✕</button>
+            <div className="w-full grid grid-cols-5 gap-3 bg-amber-950/10 p-4 rounded-xl border border-amber-900/10">
+              {/* 便條紙（預設道具） */}
+              <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner">
+                <span className="text-3xl" title="阿嬤的便條紙">📝</span>
+              </div>
+              {/* 錄音帶 */}
+              <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner">
+                {bpTape ? <span className="text-3xl" title="阿嬤的錄音帶">📼</span> : <span className="text-black/15 text-2xl font-bold">?</span>}
+              </div>
+              {/* 秘方 */}
+              <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner">
+                {bpRecipe
+                  ? <img src="/images/scale_menu.png" alt="紅豆湯秘方" className="w-[70%] h-[70%] object-contain" />
+                  : <span className="text-black/15 text-2xl font-bold">?</span>}
+              </div>
+              {/* 膠卷 */}
+              <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner">
+                {bpFilm ? <span className="text-3xl" title="時光膠卷">🎞️</span> : <span className="text-black/15 text-2xl font-bold">?</span>}
+              </div>
+              {/* 紅豆 */}
+              <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner">
+                {bpBeans
+                  ? <img src="/images/beans_big.webp" alt="紅豆" className="w-[75%] h-[75%] object-contain" />
+                  : <span className="text-black/15 text-2xl font-bold">?</span>}
+              </div>
+              {/* 空格補滿 */}
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 shadow-inner" />
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
@@ -547,6 +702,20 @@ export default function CookerGame() {
         </div>
       )}
 
+      {showAllReadyPopup && (
+        <div className="fixed inset-0 bg-black/55 flex items-center justify-center z-50">
+          <div className="bg-[#fffdf0] border-4 border-amber-900/30 rounded-2xl p-8 w-[300px] text-center shadow-2xl">
+            <p className="text-3xl mb-3">🍲</p>
+            <p className="text-lg font-black text-amber-900 mb-4">材料都已加入</p>
+            <p className="text-sm text-amber-800 mb-6">快把鍋蓋蓋上，開始煮紅豆湯！</p>
+            <button
+              onClick={() => setShowAllReadyPopup(false)}
+              className="w-full bg-amber-900 text-amber-50 font-bold py-2 rounded-xl hover:bg-amber-950 transition-all"
+            >好的！</button>
+          </div>
+        </div>
+      )}
+
       {showMissingPopup && (
         <div className="fixed inset-0 bg-black/55 flex items-center justify-center z-50">
           <div className="bg-[#fffdf0] border-4 border-amber-900/30 rounded-2xl p-8 w-[300px] text-center shadow-2xl">
@@ -559,7 +728,7 @@ export default function CookerGame() {
       )}
 
       {stage === 'result' && result && (
-        <ResultModal result={result} elapsedSec={elapsedSec} router={router} />
+        <ResultModal result={result} elapsedSec={elapsedSec} router={router} onReset={handleReset} />
       )}
 
       {locked && (

@@ -166,7 +166,7 @@ export default function CalendarPuzzle() {
         {/* 返回鍵 (復古風格統一) */}
         <button
           onClick={() => router.push('/main')}
-          className="absolute top-4 left-4 z-40 flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
+          className="fixed top-4 left-[104px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
         >
           ⬅ 返回柑仔店
         </button>
@@ -197,6 +197,7 @@ export default function CalendarPuzzle() {
                 <motion.div
                   key={piece.id}
                   onClick={() => handlePieceClick(index)}
+                  title={isSelected ? '再點一塊碎片來交換位置' : '點擊選取此碎片'}
                   className="relative w-full h-full select-none cursor-pointer rounded-lg overflow-hidden"
                   // 被選取的碎片微微放大、帶有白邊
                   animate={{
@@ -235,10 +236,10 @@ export default function CalendarPuzzle() {
                 翻到日曆的背面，竟然有阿嬤用原子筆隨手寫下的紅豆湯獨門配方...！
               </p>
 
-              {/* 顯示紅豆湯秘方圖片：scale_menu.webp */}
+              {/* 顯示紅豆湯秘方圖片：scale_menu.png */}
               <div className="relative w-[72%] aspect-1672/941 bg-zinc-100 rounded-lg border-4 border-white shadow-xl overflow-hidden mb-5 transform rotate-1">
                 <img
-                  src="/images/scale_menu.webp"
+                  src="/images/scale_menu.png"
                   alt="阿公的紅豆湯秘方"
                   className="w-full h-full object-contain"
                 />
