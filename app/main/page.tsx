@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
@@ -231,12 +230,12 @@ export default function MainGame() {
           </motion.button>
         )}
         
-        {/* ==================== 關卡點擊熱區 (整合圖片與重複檢查邏輯) ==================== */}
+        {/* ==================== 關卡點擊熱區 (改用 div 以隱藏網址預覽) ==================== */}
         {hotspots.map((spot) => (
-          <Link
+          <div
             key={spot.id}
-            href={spot.href}
             onClick={(e) => {
+              e.stopPropagation(); // 防止點擊事件冒泡到背景影片
               playClickSound();
 
               // --- 重複遊玩彈窗檢查 ---
@@ -244,17 +243,22 @@ export default function MainGame() {
                 const hasItem = localStorage.getItem(spot.itemKey) === 'true';
                 if (hasItem) {
                   // 如果已經擁有該關卡指定產出的道具，才攔截阻擋並跳出詢問彈窗
-                  e.preventDefault(); 
                   setPendingHref(spot.href); 
                   setShowReplayAlert(true);  
+                  return; // 終止執行，不進行頁面跳轉
                 }
               }
+
+              // 未被阻擋，進行手動頁面跳轉
+              router.push(spot.href);
             }}
             className={`absolute cursor-pointer z-20 flex items-center justify-center
               ${DEV_MODE ? 'border-2 border-red-500 bg-red-500/10' : ''}
             `}
             style={spot.style}
             title={spot.name}
+            role="button"
+            tabIndex={0}
           >
             {/* 🎬 物件圖片層：外層管 scale，內層圖片管常駐發光 */}
             {(() => {
@@ -292,7 +296,7 @@ export default function MainGame() {
 
             {/* 開發模式文字 */}
             {DEV_MODE && <span className="absolute bg-black/70 text-white px-1 rounded text-[10px]">{spot.id}</span>}
-          </Link>
+          </div>
         ))}
 
         {/* ==================== 圖片內建背包的透明熱區 ==================== */}
