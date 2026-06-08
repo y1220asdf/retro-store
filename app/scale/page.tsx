@@ -312,7 +312,7 @@ export default function ScaleGame() {
             onDrop={handleDropBackToTable}
             className="absolute top-0 right-0 w-[36%] h-full pointer-events-auto z-10"
           >
-            <div className="absolute bottom-[28%] right-[10%] w-[54%] flex flex-wrap gap-x-3 gap-y-2 justify-center">
+            <div className="absolute bottom-[28%] right-[10%] grid grid-cols-4 gap-x-3 gap-y-3">
               {availableWeights.map((item) => (
                 <div
                   key={item.id}
@@ -323,7 +323,7 @@ export default function ScaleGame() {
                   <img
                     src={`/images/${item.imageName}.webp`}
                     alt={item.label}
-                    className="w-12 h-12 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] pointer-events-none"
+                    className="w-10 h-10 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] pointer-events-none"
                   />
                   <span className="text-[9px] font-black bg-amber-900/90 text-amber-50 px-1.5 py-0.5 rounded-full mt-0.5 min-w-[34px] text-center shadow-md border border-amber-900/90">
                     {item.label}
