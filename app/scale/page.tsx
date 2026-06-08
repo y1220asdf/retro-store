@@ -214,239 +214,239 @@ export default function ScaleGame() {
   const yellowOffset = arcLength - (arcLength * targetMin) / 100;
 
   return (
-    <div 
-      className="fixed inset-0 w-screen h-screen overflow-hidden bg-cover bg-center bg-no-repeat select-none"
-      style={{ backgroundImage: "url('/images/scale_1.webp')" }}
-    >
-      
-      {/*返回主導覽按鈕 */}
-      <button
-        onClick={() => router.push('/main')}
-        className="absolute top-4 left-4 z-30 flex items-center justify-center rounded-3xl bg-white/90 px-4 py-2 shadow-md hover:bg-white text-gray-700 font-bold transition-all text-sm"
+    <main className="flex h-screen w-screen items-center justify-center bg-zinc-950 p-4 overflow-hidden selection:bg-transparent">
+      <div
+        className="relative inline-block w-full max-w-5xl aspect-video rounded-xl shadow-2xl overflow-hidden border border-white/10 bg-cover bg-center bg-no-repeat select-none"
+        style={{ backgroundImage: "url('/images/scale_1.webp')" }}
       >
-        ← 返回柑仔店
-      </button>
-
-      {/*簡化數據看板：讓玩家知道目標是 540g，以及現在右邊幾克 */}
-      <div className="absolute top-5 left-1/2 transform -translate-x-1/2 bg-amber-50/90 border-amber-50/90 backdrop-blur-sm border-2 px-6 py-2 rounded-3xl shadow-md z-30 text-center flex gap-6 items-center min-w-[320px] justify-center">
-        <div className="text-sm font-bold text-amber-900">
-          右盤砝碼：<span className="text-red-600 font-black">{totalRightWeight}</span> g
-        </div>
-      </div>
-            
-      {/*遊戲物件絕對定位層 */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none z-10">
-
-        {/*左側區域：豆袋與勺子*/}
-        <div 
-          onDragOver={handleDragOver}
-          onDrop={handleSpoonDropOnBeans}
-          className="absolute top-0 left-0 w-[40%] h-full pointer-events-auto z-20"
+  
+        {/*返回主導覽按鈕 */}
+        <button
+          onClick={() => router.push('/main')}
+          className="absolute top-4 left-4 z-30 flex items-center justify-center rounded-3xl bg-white/90 px-4 py-2 shadow-md hover:bg-white text-gray-700 font-bold transition-all text-sm"
         >
-          <div className="absolute bottom-[22%] left-[12%] w-[320px] flex flex-col items-center justify-end">
-            <img 
-              src="/images/scale_beans.webp"
-              alt="豆袋"
-              className="w-full h-auto object-contain drop-shadow-md"
-            />
+          ← 返回柑仔店
+        </button>
+  
+        {/*簡化數據看板：讓玩家知道目標是 540g，以及現在右邊幾克 */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-amber-50/90 border-amber-50/90 backdrop-blur-sm border-2 px-6 py-2 rounded-3xl shadow-md z-30 text-center flex gap-6 items-center min-w-[260px] justify-center">
+          <div className="text-sm font-bold text-amber-900">
+            右盤砝碼：<span className="text-red-600 font-black">{totalRightWeight}</span> g
           </div>
-
-          {/* 木勺子 */}
-          {isSpoonOnTable && (
-            <div
-              draggable
-              onDragStart={(e) => handleDragStart(e, 'scale_spoon')}
-              className="absolute bottom-[24%] left-[72%] flex flex-col items-center cursor-grab active:cursor-grabbing transition-transform hover:scale-110"
-            >
-              <img 
-                src="/images/scale_spoon.webp"
-                alt="木勺" 
-                className="w-16 h-16 object-contain drop-shadow-md"
-              />
-            </div>
-          )}
         </div>
-
-        {/* 【中央區域：天秤】 */}
-        <div className="absolute bottom-[10%] left-1/2 transform -translate-x-1/2 w-[500px] h-[350px] pointer-events-auto z-20">
-          <img 
-            src="/images/scale_balance.webp" 
-            alt="天秤"
-            className="w-full h-full object-contain pointer-events-none"
-          />
-
-          <div 
+  
+        {/*遊戲物件絕對定位層 */}
+        <div className="absolute inset-0 w-full h-full pointer-events-none z-10">
+  
+          {/*左側區域：豆袋與勺子*/}
+          <div
             onDragOver={handleDragOver}
-            onDrop={handleDropToScale}
-            className={`absolute top-[12%] right-[2%] w-[150px] h-[100px] rounded-full border-2 border-dashed transition-all flex flex-wrap gap-1 p-2 items-center justify-center z-10
-              ${totalRightWeight > 0 ? 'border-amber-600 bg-amber-950/10' : 'border-transparent hover:border-amber-400 hover:bg-white/10'}`}
+            onDrop={handleSpoonDropOnBeans}
+            className="absolute top-0 left-0 w-[38%] h-full pointer-events-auto z-20"
           >
-            {placedWeights.map((item) => (
+            <div className="absolute bottom-[30%] left-[15%] w-[62%] flex flex-col items-center justify-end">
               <img
-                key={item.id}
-                draggable 
-                onDragStart={(e) => handleDragStart(e, item.id)}
-                src={`/images/${item.imageName}.webp`}
-                alt={item.label}
-                className="w-10 h-10 object-contain cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 transition-transform drop-shadow-md"
-              />
-            ))}
-          </div>
-
-          {/* 顯示天秤左盤上的紅豆視覺 */}
-          {totalLeftBean > 0 && (
-            <div className="absolute top-[7%] left-[-10%] w-[290px] h-[150px] z-30 pointer-events-none overflow-visible">
-              <img
-                src="/images/beans_big.webp"
-                alt="紅豆堆"
-                className="absolute left-1/2 top-1/2 w-[180px] h-auto -translate-x-1/2 -translate-y-1/2 drop-shadow-md"
+                src="/images/scale_beans.webp"
+                alt="豆袋"
+                className="w-full h-auto object-contain drop-shadow-md"
               />
             </div>
-          )}
-        </div>
-
-        {/*右側區域：桌面砝碼*/}
-        <div 
-          onDragOver={handleDragOver}
-          onDrop={handleDropBackToTable}
-          className="absolute top-0 right-0 w-[45%] h-full pointer-events-auto z-10"
-        >
-          <div className="absolute bottom-[20%] right-[15%] max-w-[260px] flex flex-wrap gap-x-5 gap-y-4 justify-center">
-            {availableWeights.map((item) => (
+  
+            {/* 木勺子 */}
+            {isSpoonOnTable && (
               <div
-                key={item.id}
-                draggable 
-                onDragStart={(e) => handleDragStart(e, item.id)}
-                className="flex flex-col items-center cursor-grab active:cursor-grabbing transition-all hover:-translate-y-1.5 hover:scale-105"
+                draggable
+                onDragStart={(e) => handleDragStart(e, 'scale_spoon')}
+                className="absolute bottom-[25%] left-[70%] flex flex-col items-center cursor-grab active:cursor-grabbing transition-transform hover:scale-110"
               >
-                <img 
-                  src={`/images/${item.imageName}.webp`} 
-                  alt={item.label} 
-                  className="w-14 h-14 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] pointer-events-none"
+                <img
+                  src="/images/scale_spoon.webp"
+                  alt="木勺"
+                  className="w-16 h-16 object-contain drop-shadow-md"
                 />
-                <span className="text-[10px] font-black bg-amber-900/90 text-amber-50 px-1.5 py-0.5 rounded-full mt-1 min-w-[38px] text-center shadow-md border border-amber-900/90">
-                  {item.label}
-                </span>
               </div>
-            ))}
+            )}
+          </div>
+  
+          {/* 【中央區域：天秤】 */}
+          <div className="absolute bottom-[30%] left-1/2 -translate-x-1/2 w-[42%] aspect-10/7 pointer-events-auto z-20">
+            <img
+              src="/images/scale_balance.webp"
+              alt="天秤"
+              className="w-full h-full object-contain pointer-events-none"
+            />
+  
+            <div
+              onDragOver={handleDragOver}
+              onDrop={handleDropToScale}
+              className={`absolute top-[12%] right-[2%] w-[30%] h-[28%] rounded-full border-2 border-dashed transition-all flex flex-wrap gap-1 p-1 items-center justify-center z-10
+                ${totalRightWeight > 0 ? 'border-amber-600 bg-amber-950/10' : 'border-transparent hover:border-amber-400 hover:bg-white/10'}`}
+            >
+              {placedWeights.map((item) => (
+                <img
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item.id)}
+                  src={`/images/${item.imageName}.webp`}
+                  alt={item.label}
+                  className="w-7 h-7 object-contain cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 transition-transform drop-shadow-md"
+                />
+              ))}
+            </div>
+  
+            {/* 顯示天秤左盤上的紅豆視覺 */}
+            {totalLeftBean > 0 && (
+              <div className="absolute top-[14%] left-[-3%] w-[44%] h-[34%] z-30 pointer-events-none overflow-visible">
+                <img
+                  src="/images/beans_big.webp"
+                  alt="紅豆堆"
+                  className="absolute left-1/2 top-1/2 w-[70%] h-auto -translate-x-1/2 -translate-y-1/2 drop-shadow-md"
+                />
+              </div>
+            )}
+          </div>
+  
+          {/*右側區域：桌面砝碼*/}
+          <div
+            onDragOver={handleDragOver}
+            onDrop={handleDropBackToTable}
+            className="absolute top-0 right-0 w-[36%] h-full pointer-events-auto z-10"
+          >
+            <div className="absolute bottom-[28%] right-[10%] w-[54%] flex flex-wrap gap-x-3 gap-y-2 justify-center">
+              {availableWeights.map((item) => (
+                <div
+                  key={item.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, item.id)}
+                  className="flex flex-col items-center cursor-grab active:cursor-grabbing transition-all hover:-translate-y-1.5 hover:scale-105"
+                >
+                  <img
+                    src={`/images/${item.imageName}.webp`}
+                    alt={item.label}
+                    className="w-12 h-12 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.3)] pointer-events-none"
+                  />
+                  <span className="text-[9px] font-black bg-amber-900/90 text-amber-50 px-1.5 py-0.5 rounded-full mt-0.5 min-w-[34px] text-center shadow-md border border-amber-900/90">
+                    {item.label}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
-      </div>
-
-      {/*QTE 校準進度條彈窗*/}
-      {showQTE && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 animate-fade-in">
-          
-          {/* 高質感白色毛玻璃長方形底框 */}
-          <div className="bg-white/20 backdrop-blur-md border border-white/30 p-12 w-[560px] h-[320px] rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.4)] flex items-center justify-between select-none">
-            
-            {/* 左側：修正後完美等寬、無錯位 SVG 圓弧畫布 */}
-            <div className="relative w-[320px] h-[240px] flex items-center justify-center">
-            <svg className="w-full h-full" viewBox="0 0 200 200">
-              {/* 深灰色基礎背景圓弧 (半徑 85, 圓心 100, 110) */}
-              <path
-                d="M 15,110 A 85,85 0 0,1 185,110"
-                fill="none"
-                stroke="#292524"
-                strokeWidth="18" 
-                strokeLinecap="round"
-              />
-              
-              {/*黃色成功閾值區*/}
-              <path
-                d="M 15,110 A 85,85 0 0,1 185,110"
-                fill="none"
-                stroke="#fbbf24" 
-                strokeWidth="18"
-                strokeLinecap="butt"
-                strokeDasharray={`${yellowLength} ${arcLength}`}
-                strokeDashoffset={-arcLength * targetMin / 100}
-              />
-
-              {/*紅色指針針頭：精確繞著圓心 (100, 110) 連動旋轉 */}
-              <g transform={`rotate(${currentAngle}, 100, 110)`}>
-                <line
-                  x1="100"
-                  y1="110"
-                  x2="100"
-                  y2="20" 
-                  stroke="#dc2626" 
-                  strokeWidth="5"  
-                  strokeLinecap="round"
-                />
-                <circle cx="100" cy="110" r="5" fill="#dc2626" />
-              </g>
-            </svg>
+  
+        {/*QTE 校準進度條彈窗*/}
+        {showQTE && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 animate-fade-in">
+  
+            {/* 高質感白色毛玻璃長方形底框 */}
+            <div className="bg-white/20 backdrop-blur-md border border-white/30 p-8 w-[56%] max-w-[520px] aspect-7/4 rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.4)] flex items-center justify-between select-none">
+  
+              {/* 左側：修正後完美等寬、無錯位 SVG 圓弧畫布 */}
+              <div className="relative w-[68%] h-full flex items-center justify-center">
+                <svg className="w-full h-full" viewBox="0 0 200 200">
+                  {/* 深灰色基礎背景圓弧 (半徑 85, 圓心 100, 110) */}
+                  <path
+                    d="M 15,110 A 85,85 0 0,1 185,110"
+                    fill="none"
+                    stroke="#292524"
+                    strokeWidth="18"
+                    strokeLinecap="round"
+                  />
+  
+                  {/*黃色成功閾值區*/}
+                  <path
+                    d="M 15,110 A 85,85 0 0,1 185,110"
+                    fill="none"
+                    stroke="#fbbf24"
+                    strokeWidth="18"
+                    strokeLinecap="butt"
+                    strokeDasharray={`${yellowLength} ${arcLength}`}
+                    strokeDashoffset={-arcLength * targetMin / 100}
+                  />
+  
+                  {/*紅色指針針頭：精確繞著圓心 (100, 110) 連動旋轉 */}
+                  <g transform={`rotate(${currentAngle}, 100, 110)`}>
+                    <line
+                      x1="100"
+                      y1="110"
+                      x2="100"
+                      y2="20"
+                      stroke="#dc2626"
+                      strokeWidth="5"
+                      strokeLinecap="round"
+                    />
+                    <circle cx="100" cy="110" r="5" fill="#dc2626" />
+                  </g>
+                </svg>
+              </div>
+  
+              {/* 右側深色毛玻璃按鈕 */}
+              <div className="flex items-center justify-center w-[28%]">
+                <button
+                  onClick={handleQTESubmit}
+                  className="w-20 h-20 rounded-full bg-stone-950/70 backdrop-blur-md border-2 border-white/20 hover:bg-stone-950/90 active:scale-95 text-amber-50 hover:text-amber-300 font-black text-xl shadow-[0_8px_25px_rgba(0,0,0,0.5)] flex items-center justify-center transition-all cursor-pointer tracking-widest"
+                >
+                  點擊
+                </button>
+              </div>
             </div>
-
-            {/* 右側深色毛玻璃按鈕 */}
-            <div className="flex items-center justify-center w-[120px]">
+          </div>
+        )}
+  
+        {/* 獲得紅豆道具 - 勝利破關彈窗 */}
+        {isBalanced && (
+          <div className="absolute inset-0 bg-black/70 flex items-center justify-center z-50 animate-fade-in">
+            {/* 保持外框精緻大小 */}
+            <div className="relative bg-[#fdfaf2] border border-amber-900/10 p-8 rounded-[32px] max-w-sm w-[80%] text-center flex flex-col items-center overflow-visible shadow-[0_0_60px_rgba(0,0,0,0.55),0_15px_30px_rgba(0,0,0,0.3)]">
+  
+              {/* 🔴 核心修正：利用 scale-[3] 直接將圖片核心像素強制放大 3 倍，並允許 overflow 穿透外框 */}
+              <div className="w-full flex items-center justify-center h-28 my-3 overflow-visible">
+                <img
+                  src="/images/beans_big.webp"
+                  alt="獲得道具：紅豆"
+                  className="w-20 h-20 object-contain transform scale-[2] drop-shadow-[0_4px_10px_rgba(0,0,0,0.15)]"
+                />
+              </div>
+  
+              <p className="text-amber-950 font-black text-lg mb-2 tracking-wider">
+                成功獲得道具「紅豆」！
+              </p>
+  
               <button
-                onClick={handleQTESubmit}
-                className="w-24 h-24 rounded-full bg-stone-950/70 backdrop-blur-md border-2 border-white/20 hover:bg-stone-950/90 active:scale-95 text-amber-50 hover:text-amber-300 font-black text-2xl shadow-[0_8px_25px_rgba(0,0,0,0.5)] flex items-center justify-center transition-all cursor-pointer tracking-widest"
+                onClick={() => {
+                  localStorage.setItem('hasBeans', 'true');
+                  router.push('/main');
+                }}
+                className="w-full bg-stone-900/10 backdrop-blur-md border-2 border-white/60 hover:bg-stone-900/20 text-stone-900 font-black py-3 px-6 rounded-2xl shadow-md transition-all tracking-widest text-sm cursor-pointer"
               >
-                點擊
+                收進背包並回到柑仔店
               </button>
             </div>
-
           </div>
-        </div>
-      )}
-
-      {/* 獲得紅豆道具 - 勝利破關彈窗 */}
-      {isBalanced && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 animate-fade-in">
-          {/* 保持外框精緻大小 */}
-          <div className="relative bg-[#fdfaf2] border border-amber-900/10 p-10 rounded-[32px] max-w-sm w-full text-center flex flex-col items-center overflow-visible shadow-[0_0_60px_rgba(0,0,0,0.55),0_15px_30px_rgba(0,0,0,0.3)]">
-            
-            {/* 🔴 核心修正：利用 scale-[3] 直接將圖片核心像素強制放大 3 倍，並允許 overflow 穿透外框 */}
-            <div className="w-full flex items-center justify-center h-32 my-4 overflow-visible">
-              <img 
-                src="/images/beans_big.webp" 
-                alt="獲得道具：紅豆" 
-                className="w-24 h-24 object-contain transform scale-[2] drop-shadow-[0_4px_10px_rgba(0,0,0,0.15)]"
-              />
+        )}
+  
+        {/* 🔒 未獲得紅豆秘方時的鎖定彈窗 */}
+        {locked && (
+          <div className="absolute inset-0 z-9999 bg-black/80 backdrop-blur-sm flex items-center justify-center">
+            <div className="bg-[#fffdf0] border-4 border-amber-900 rounded-2xl p-8 w-[340px] text-center shadow-2xl">
+              <h2 className="text-xl font-black text-amber-950 mb-3">
+                請先完成日曆拼圖
+              </h2>
+  
+              <p className="text-sm text-amber-800 mb-6 leading-relaxed">
+                你還沒有拿到紅豆湯秘方喔！
+              </p>
+  
+              <button
+                onClick={() => router.push("/main")}
+                className="w-full bg-amber-900 text-amber-50 font-bold py-3 rounded-xl hover:bg-amber-950 active:scale-95 transition-all"
+              >
+                返回柑仔店
+              </button>
             </div>
-
-            <p className="text-amber-950 font-black text-lg mb-2 tracking-wider">
-              成功獲得道具「紅豆」！
-            </p>
-            
-            <button
-              onClick={() => {
-                localStorage.setItem('hasBeans', 'true');
-                router.push('/main');
-              }}
-              className="w-full bg-stone-900/10 backdrop-blur-md border-2 border-white/60 hover:bg-stone-900/20 text-stone-900 font-black py-3 px-6 rounded-2xl shadow-md transition-all tracking-widest text-sm cursor-pointer"
-            >
-              收進背包並回到柑仔店
-            </button>
           </div>
-        </div>
-      )}
-
-       {/* 🔒 未獲得紅豆秘方時的鎖定彈窗 */}
-       {locked && (
-        <div className="fixed inset-0 z-9999 bg-black/80 backdrop-blur-sm flex items-center justify-center">
-          <div className="bg-[#fffdf0] border-4 border-amber-900 rounded-2xl p-8 w-[340px] text-center shadow-2xl">
-            <h2 className="text-xl font-black text-amber-950 mb-3">
-              請先完成日曆拼圖
-            </h2>
-
-            <p className="text-sm text-amber-800 mb-6 leading-relaxed">
-              你還沒有拿到紅豆湯秘方喔！
-            </p>
-
-            <button
-              onClick={() => router.push("/main")}
-              className="w-full bg-amber-900 text-amber-50 font-bold py-3 rounded-xl hover:bg-amber-950 active:scale-95 transition-all"
-            >
-              返回柑仔店
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </main>
   );
 }
