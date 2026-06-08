@@ -262,22 +262,14 @@ function SteamParticles({ active, fullScreen }: { active: boolean; fullScreen: b
 function ResultModal({ result, elapsedSec, router, onReset }: {
   result: ResultType; elapsedSec: number; router: ReturnType<typeof useRouter>; onReset: () => void;
 }) {
-  const [showIncompletePopup, setShowIncompletePopup] = useState(false);
-
   const info = {
     perfect: {
       emoji: '🎉', title: '好吃紅豆湯！',
       desc: '火候剛剛好，粒粒分明、軟糯香甜。\n阿公看到一定會很開心！',
-      btnLabel: '進入結局',
+      btnLabel: '收進背包並返回',
       action: () => {
         localStorage.setItem('hasSoup', 'true');
-        const allCollected = ['hasTape', 'hasFilm', 'hasRecipe', 'hasBeans']
-          .every(k => localStorage.getItem(k) === 'true');
-        if (allCollected) {
-          router.push('/ending');
-        } else {
-          setShowIncompletePopup(true);
-        }
+        router.push('/main');
       },
     },
     overcooked: {
@@ -309,31 +301,10 @@ function ResultModal({ result, elapsedSec, router, onReset }: {
         </button>
         {result !== 'perfect' && (
           <button onClick={() => router.push('/main')}
-            className="mt-3 w-full text-amber-700/60 text-xs hover:text-amber-700 transition-colors py-1"
+            className="mt-3 w-full text-amber-700/60 text-xs hover:text-amber-700 transition-colors py-1 cursor-pointer"
           >
             先回到柑仔店逛逛
           </button>
-        )}
-
-        {/* ── 道具未集齊 popup ── */}
-        {showIncompletePopup && (
-          <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-[32px] z-10">
-            <div className="bg-[#fdfaf2] p-6 rounded-2xl max-w-[260px] w-full text-center flex flex-col items-center shadow-xl border border-amber-900/20">
-              <span className="text-3xl mb-2">🎒</span>
-              <h3 className="text-base font-black text-amber-950 mb-2 tracking-wider">還沒收集完！</h3>
-              <p className="text-sm text-amber-800 mb-4 leading-relaxed">
-                尚有道具還沒搜集到<br />去其他關卡逛逛吧
-              </p>
-              <button
-                onClick={() => router.push('/main')}
-                className="w-full bg-amber-900 text-amber-50 font-bold py-2 px-4 rounded-xl text-sm tracking-widest hover:bg-amber-950 active:scale-95 transition-all cursor-pointer"
-              >回到柑仔店</button>
-              <button
-                onClick={() => setShowIncompletePopup(false)}
-                className="mt-2 text-xs text-amber-600/70 hover:text-amber-700 transition-colors py-1 cursor-pointer"
-              >留在這裡</button>
-            </div>
-          </div>
         )}
       </div>
     </div>
@@ -354,6 +325,7 @@ export default function CookerGame() {
   const [bpFilm,    setBpFilm]    = useState(false);
   const [bpRecipe,  setBpRecipe]  = useState(false);
   const [bpBeans,   setBpBeans]   = useState(false);
+  const [bpSoup,    setBpSoup]    = useState(false); // 加上 Soup 以便背包完整顯示
 
   useEffect(() => {
     if (!isBackpackOpen) return;
@@ -361,6 +333,7 @@ export default function CookerGame() {
     setBpFilm  (localStorage.getItem('hasFilm')   === 'true');
     setBpRecipe(localStorage.getItem('hasRecipe') === 'true');
     setBpBeans (localStorage.getItem('hasBeans')  === 'true');
+    setBpSoup  (localStorage.getItem('hasSoup')   === 'true');
   }, [isBackpackOpen]);
 
   const [beansInBowl, setBeansInBowl]     = useState(false);
@@ -652,7 +625,7 @@ export default function CookerGame() {
       </div>{/* end TABLE SURFACE ZONE */}
 
       {/* ── 背包熱區（對齊 cooker_bg 右下角的背包圖示）
-           位置參考 main/page.tsx 的背包熱區，如需微調請調整 top/left/width/height ── */}
+            位置參考 main/page.tsx 的背包熱區，如需微調請調整 top/left/width/height ── */}
       <button
         onClick={() => setIsBackpackOpen(true)}
         className="absolute z-30 cursor-pointer"
@@ -670,7 +643,7 @@ export default function CookerGame() {
               onClick={() => setIsBackpackOpen(false)}
               className="absolute top-3 right-4 text-2xl font-bold text-amber-900 hover:text-red-600 transition-colors"
             >✕</button>
-            <div className="w-full grid grid-cols-5 gap-3 bg-amber-950/10 p-4 rounded-xl border border-amber-900/10">
+            <div className="w-full grid grid-cols-6 gap-3 bg-amber-950/10 p-4 rounded-xl border border-amber-900/10">
               {/* 便條紙（預設道具） */}
               <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner">
                 <span className="text-3xl" title="阿嬤的便條紙">📝</span>
@@ -695,8 +668,14 @@ export default function CookerGame() {
                   ? <img src="/images/beans_big.webp" alt="紅豆" className="w-[75%] h-[75%] object-contain" />
                   : <span className="text-black/15 text-2xl font-bold">?</span>}
               </div>
+              {/* 完美紅豆湯 */}
+              <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner">
+                {bpSoup
+                  ? <img src="/images/cooker_result_perfect.png" alt="阿嬤的紅豆湯" className="w-[80%] h-[80%] object-contain" />
+                  : <span className="text-black/15 text-2xl font-bold">?</span>}
+              </div>
               {/* 空格補滿 */}
-              {[...Array(5)].map((_, i) => (
+              {[...Array(4)].map((_, i) => (
                 <div key={i} className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 shadow-inner" />
               ))}
             </div>
