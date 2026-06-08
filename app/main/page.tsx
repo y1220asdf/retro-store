@@ -22,6 +22,7 @@ export default function MainGame() {
   
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showRecipeModal, setShowRecipeModal] = useState(false);
+  const [showFilmModal, setShowFilmModal] = useState(false);
 
   // ==================== 🎉 結局觸發狀態 ====================
   const [isEndingUnlocked, setIsEndingUnlocked] = useState(false); // 控制常駐的結局按鈕
@@ -511,14 +512,24 @@ export default function MainGame() {
                   )}
                 </div>
 
-                {/* 第 4 格：時光膠卷 */}
-                <div className="aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group cursor-help">
+               {/* 第 4 格：時光膠卷 (點擊放大照片) */}
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (hasFilm) {
+                      setShowFilmModal(true);
+                    }
+                  }}
+                  className={`aspect-square bg-white/40 rounded-lg border border-amber-900/10 flex items-center justify-center shadow-inner relative group ${
+                    hasFilm ? "cursor-pointer hover:bg-white/60 transition-colors" : "cursor-help"
+                  }`}
+                >
                   {hasFilm ? (
-                    <span 
-                      className="text-3xl sm:text-4xl transition-transform group-hover:scale-110" 
-                      title="時光膠卷"
+                    <span
+                      className="text-3xl sm:text-4xl transition-transform group-hover:scale-110 group-active:scale-95"
+                      title="時光膠卷 (點擊查看照片)"
                     >
-                        🎞️
+                      🎞️
                     </span>
                   ) : (
                     <span className="text-black/10 text-2xl font-bold">?</span>
@@ -619,6 +630,34 @@ export default function MainGame() {
             </div>
           </div>
         )}
+
+
+          {/* 時光膠卷照片 Modal */}
+          {showFilmModal && (
+            <div
+              onClick={() => setShowFilmModal(false)}
+              className="fixed inset-0 z-[999] flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            >
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className="relative flex max-h-[85vh] max-w-[90vw] items-center justify-center rounded-2xl bg-[#f8edcf] p-5 shadow-2xl border border-amber-900/20"
+              >
+                <button
+                  onClick={() => setShowFilmModal(false)}
+                  className="absolute -right-3 -top-3 flex h-9 w-9 items-center justify-center rounded-full bg-amber-900 text-white shadow-lg transition-transform hover:scale-110"
+                  aria-label="關閉"
+                >
+                  ×
+                </button>
+
+                <img
+                  src="/images/lottery_end.webp"
+                  alt="時光膠卷中的照片"
+                  className="max-h-[75vh] max-w-[82vw] object-contain rounded-lg"
+                />
+              </div>
+            </div>
+          )}
 
       </div>
     </main>
