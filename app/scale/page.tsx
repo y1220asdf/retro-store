@@ -13,6 +13,35 @@ interface WeightItem {
 export default function ScaleGame() {
   const router = useRouter();
 
+  //破關音效
+  type SFXType = "clear" | "weight" | "wrong" | "ya" | "click" | "scoop" ;
+
+  const audioRefs = useRef<Record<SFXType, HTMLAudioElement | null>>({
+    clear: null,
+    weight: null,
+    wrong: null,
+    ya: null,
+    click: null,
+    scoop: null,
+  });
+  
+  useEffect(() => {
+    audioRefs.current.clear = new Audio("/audio/gameclear.mp3");
+    audioRefs.current.weight = new Audio("/audio/scale_weight.wav");
+    audioRefs.current.wrong = new Audio("/audio/scale_wrong.wav");
+    audioRefs.current.ya = new Audio("/audio/scale_ya.wav");
+    audioRefs.current.click = new Audio("/audio/scale_click.wav");
+    audioRefs.current.scoop = new Audio("/audio/bean_scoop.mp3");
+  }, []);
+  
+  const playSFX = (type: SFXType) => {
+    const audio = audioRefs.current[type];
+    if (!audio) return;
+  
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  };
+
   // 是否鎖定天秤關
   const [locked, setLocked] = useState(false);
 
@@ -56,6 +85,14 @@ export default function ScaleGame() {
 
   //修正勝利條件：左盤剛好 540g 且 右盤也精確放了 540g 砝碼
   const isBalanced = totalLeftBean === 540 && totalRightWeight === 540;
+  const hasPlayedClearSound = useRef(false);
+
+  useEffect(() => {
+    if (isBalanced && !hasPlayedClearSound.current) {
+      playSFX("clear");
+      hasPlayedClearSound.current = true;
+    }
+  }, [isBalanced]);
 
   // Delta Time指針動畫
   useEffect(() => {
@@ -112,6 +149,7 @@ export default function ScaleGame() {
     
     const currentWeight = availableWeights.find(item => item.id === id);
     if (currentWeight) {
+      playSFX("weight");
       setPlacedWeights([...placedWeights, currentWeight]);
       setAvailableWeights(availableWeights.filter(item => item.id !== id));
     }
@@ -132,6 +170,8 @@ export default function ScaleGame() {
     e.preventDefault();
     const id = e.dataTransfer.getData('text/plain');
     if (id === 'scale_spoon') {
+      playSFX("scoop");
+
       setIsSpoonOnTable(false);
       setShowQTE(true);
     }
@@ -141,13 +181,24 @@ export default function ScaleGame() {
   const handleQTESubmit = () => {
     if (!showQTE) return;
 
+    playSFX("click");
+
     if (qteProgress >= targetMin && qteProgress <= targetMax) {
-      //修正邏輯：只要按對正確區域，就「直接送你滿滿的 540g 紅豆」！
-      alert("完美！精準舀出了 540g 的紅豆！");
+      //只要按對正確區域，就直接滿滿的540g紅豆！
+      playSFX("ya");
       setTotalLeftBean(540);
+
+      setTimeout(() => {
+        alert("完美！精準舀出了 540g 的紅豆！");
+      }, 300);
+  
     } else {
-      alert("哎呀！沒抓穩，紅豆都撒回袋子裡了！再試一次吧！");
-      setTotalLeftBean(0); // 按錯了就沒撈到，保持 0g
+      playSFX("wrong");
+      setTotalLeftBean(0);
+
+      setTimeout(() => {
+        alert("哎呀！沒抓穩，紅豆都撒回袋子裡了！再試一次吧！");
+      }, 300);
     }
 
     setShowQTE(false);
@@ -166,13 +217,12 @@ export default function ScaleGame() {
     <div 
       className="fixed inset-0 w-screen h-screen overflow-hidden bg-cover bg-center bg-no-repeat select-none"
       style={{ backgroundImage: "url('/images/scale_1.webp')" }}
-      onDragOver={(e) => e.preventDefault()}
     >
       
       {/*返回主導覽按鈕 */}
       <button
         onClick={() => router.push('/main')}
-        className="fixed top-4 left-[86px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
+        className="absolute top-4 left-4 z-30 flex items-center justify-center rounded-3xl bg-white/90 px-4 py-2 shadow-md hover:bg-white text-gray-700 font-bold transition-all text-sm"
       >
         ← 返回柑仔店
       </button>
@@ -185,7 +235,7 @@ export default function ScaleGame() {
       </div>
             
       {/*遊戲物件絕對定位層 */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none z-10" style={{ transform: 'translateY(-120px)' }}>
+      <div className="absolute inset-0 w-full h-full pointer-events-none z-10">
 
         {/*左側區域：豆袋與勺子*/}
         <div 
@@ -206,7 +256,6 @@ export default function ScaleGame() {
             <div
               draggable
               onDragStart={(e) => handleDragStart(e, 'scale_spoon')}
-              title="將勺子拖曳到豆袋舀起紅豆"
               className="absolute bottom-[24%] left-[72%] flex flex-col items-center cursor-grab active:cursor-grabbing transition-transform hover:scale-110"
             >
               <img 
@@ -226,10 +275,9 @@ export default function ScaleGame() {
             className="w-full h-full object-contain pointer-events-none"
           />
 
-          <div
+          <div 
             onDragOver={handleDragOver}
             onDrop={handleDropToScale}
-            title="將砝碼拖曳放上天秤右盤"
             className={`absolute top-[12%] right-[2%] w-[150px] h-[100px] rounded-full border-2 border-dashed transition-all flex flex-wrap gap-1 p-2 items-center justify-center z-10
               ${totalRightWeight > 0 ? 'border-amber-600 bg-amber-950/10' : 'border-transparent hover:border-amber-400 hover:bg-white/10'}`}
           >
@@ -267,9 +315,8 @@ export default function ScaleGame() {
             {availableWeights.map((item) => (
               <div
                 key={item.id}
-                draggable
+                draggable 
                 onDragStart={(e) => handleDragStart(e, item.id)}
-                title={`將 ${item.label} 砝碼拖曳到天秤右盤`}
                 className="flex flex-col items-center cursor-grab active:cursor-grabbing transition-all hover:-translate-y-1.5 hover:scale-105"
               >
                 <img 
@@ -337,7 +384,6 @@ export default function ScaleGame() {
             <div className="flex items-center justify-center w-[120px]">
               <button
                 onClick={handleQTESubmit}
-                title="趁指針在黃色區域時點擊！"
                 className="w-24 h-24 rounded-full bg-stone-950/70 backdrop-blur-md border-2 border-white/20 hover:bg-stone-950/90 active:scale-95 text-amber-50 hover:text-amber-300 font-black text-2xl shadow-[0_8px_25px_rgba(0,0,0,0.5)] flex items-center justify-center transition-all cursor-pointer tracking-widest"
               >
                 點擊
@@ -385,11 +431,11 @@ export default function ScaleGame() {
         <div className="fixed inset-0 z-9999 bg-black/80 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[#fffdf0] border-4 border-amber-900 rounded-2xl p-8 w-[340px] text-center shadow-2xl">
             <h2 className="text-xl font-black text-amber-950 mb-3">
-              你還沒有拿到紅豆湯秘方喔！
+              請先完成日曆拼圖
             </h2>
 
             <p className="text-sm text-amber-800 mb-6 leading-relaxed">
-              請再探索一下柑仔店內部
+              你還沒有拿到紅豆湯秘方喔！
             </p>
 
             <button
