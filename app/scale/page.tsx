@@ -50,8 +50,12 @@ function MobileDraggableWeight({
   });
 
   const style: React.CSSProperties = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
     touchAction: "none",
+    willChange: "transform",
+    zIndex: transform ? 9999 : 50,
   };
 
   if (size === "plate") {
@@ -63,7 +67,7 @@ function MobileDraggableWeight({
         style={style}
         src={`/images/${item.imageName}.webp`}
         alt={item.label}
-        className="w-7 h-7 object-contain cursor-grab active:cursor-grabbing hover:scale-110 active:scale-95 transition-transform drop-shadow-md z-50"
+        className="w-7 h-7 object-contain cursor-grab active:cursor-grabbing active:scale-95 drop-shadow-md"
       />
     );
   }
@@ -74,7 +78,7 @@ function MobileDraggableWeight({
       {...listeners}
       {...attributes}
       style={style}
-      className="flex flex-col items-center cursor-grab active:cursor-grabbing transition-all hover:-translate-y-1.5 hover:scale-105 z-50"
+      className="flex flex-col items-center cursor-grab active:cursor-grabbing active:scale-105"
     >
       <img
         src={`/images/${item.imageName}.webp`}
@@ -94,8 +98,12 @@ function MobileDraggableSpoon() {
   });
 
   const style: React.CSSProperties = {
-    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+    transform: transform
+      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+      : undefined,
     touchAction: "none",
+    willChange: "transform",
+    zIndex: transform ? 9999 : 50,
   };
 
   return (
@@ -104,7 +112,7 @@ function MobileDraggableSpoon() {
       {...listeners}
       {...attributes}
       style={style}
-      className="absolute bottom-[25%] left-[70%] flex flex-col items-center cursor-grab active:cursor-grabbing transition-transform hover:scale-110 z-50"
+      className="absolute bottom-[25%] left-[70%] flex flex-col items-center cursor-grab active:cursor-grabbing active:scale-105"
     >
       <img
         src="/images/scale_spoon.webp"
@@ -121,8 +129,8 @@ export default function ScaleGame() {
   const sensors = useSensors(
     useSensor(TouchSensor, {
       activationConstraint: {
-        delay: 80,
-        tolerance: 8,
+        delay: 0,
+        tolerance: 5,
       },
     })
   );
@@ -592,7 +600,9 @@ export default function ScaleGame() {
       {locked && (
         <div className="absolute inset-0 z-9999 bg-black/80 backdrop-blur-sm flex items-center justify-center">
           <div className="bg-[#fffdf0] border-4 border-amber-900 rounded-2xl p-8 w-[340px] text-center shadow-2xl">
-            <h2 className="text-xl font-black text-amber-950 mb-3">請先完成日曆拼圖</h2>
+            <h2 className="text-xl font-black text-amber-950 mb-3">
+              請先完成日曆拼圖
+            </h2>
 
             <p className="text-sm text-amber-800 mb-6 leading-relaxed">
               你還沒有拿到紅豆湯秘方喔！
