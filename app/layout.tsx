@@ -6,8 +6,6 @@ import "./globals.css";
 import AudioPlayer from "../components/AudioPlayer";
 // 引入手機翻轉提示組件
 import OrientationPrompt from "../components/OrientationPrompt";
-// 引入剛剛做好的全螢幕按鈕組件
-import FullscreenButton from "../components/FullscreenButton";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,11 +37,8 @@ export default function RootLayout({
         {/* 📱 全局手機翻轉提示 (只在直向手機螢幕顯示，會蓋在最上層) */}
         <OrientationPrompt />
 
-        {/* 🔊 音樂播放器 */}
+        {/* 🔊 音樂播放器必須乖乖待在 body 裡面，且不可以在它自己的檔案裡寫 html/body */}
         <AudioPlayer />
-
-        {/* 🖥️ 全局全螢幕控制按鈕 */}
-        <FullscreenButton />
         
         {/* 遊戲的實際頁面內容 */}
         {children}
