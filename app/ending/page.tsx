@@ -83,6 +83,9 @@ export default function Ending() {
   const [step, setStep] = useState(0);
   const [prevSrc, setPrevSrc] = useState<string | undefined>(undefined);
   const [typedText, setTypedText] = useState("");
+  
+  // 新增：控制「重新開始選項」彈窗的狀態
+  const [showRestartModal, setShowRestartModal] = useState(false);
 
   const currentStep = storySteps[step] ?? storySteps[finalStepIndex];
   const currentSrc =
@@ -148,8 +151,21 @@ export default function Ending() {
     setStep(finalStepIndex);
   };
 
-  // 重新開始，回到首頁 page.tsx
-  const handleRestart = () => {
+  // 點擊圖片上的透明重新開始按鈕：打開彈窗
+  const handleRestartClick = () => {
+    setShowRestartModal(true);
+  };
+
+  // 確認重新開始邏輯 (接收 boolean 決定是否清空)
+  const handleConfirmRestart = (clearBackpack: boolean) => {
+    if (clearBackpack) {
+      localStorage.removeItem("hasTape");
+      localStorage.removeItem("hasFilm");
+      localStorage.removeItem("hasRecipe");
+      localStorage.removeItem("hasBeans");
+      localStorage.removeItem("hasSoup");
+      localStorage.removeItem("hasSeenEndingPrompt");
+    }
     router.push("/");
   };
 
@@ -222,7 +238,7 @@ export default function Ending() {
       {/* 最終 end8 上的透明重新開始按鈕 */}
       {isFinalImage && (
         <button
-          onClick={handleRestart}
+          onClick={handleRestartClick}
           title="重新開始"
           aria-label="重新開始"
           className="absolute left-1/2 top-[54%] z-50 h-[62px] w-[170px] -translate-x-1/2 -translate-y-1/2 cursor-pointer bg-transparent md:h-[76px] md:w-[210px]"
@@ -238,6 +254,40 @@ export default function Ending() {
       >
         跳過動畫
       </button>
+
+      {/* ==================== 重新開始確認彈窗 ==================== */}
+      {showRestartModal && (
+        <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-md transition-opacity">
+          <div className="flex w-[90%] max-w-sm flex-col items-center rounded-2xl border border-white/20 bg-zinc-900 p-8 shadow-2xl text-center">
+            <h3 className="mb-2 text-xl font-bold tracking-widest text-white">
+              準備回到首頁
+            </h3>
+            <p className="mb-8 text-sm text-white/60">
+              請問是否要保留目前的背包進度？
+            </p>
+            <div className="flex w-full flex-col gap-3">
+              <button
+                onClick={() => handleConfirmRestart(false)}
+                className="w-full rounded-xl bg-white/20 px-4 py-3 font-bold text-white transition-all hover:bg-white/30 active:scale-95"
+              >
+                保留進度並重玩
+              </button>
+              <button
+                onClick={() => handleConfirmRestart(true)}
+                className="w-full rounded-xl border border-white/20 px-4 py-3 font-bold text-white/80 transition-all hover:bg-white/10 hover:text-white active:scale-95"
+              >
+                清空背包並重玩
+              </button>
+              <button
+                onClick={() => setShowRestartModal(false)}
+                className="mt-2 w-full py-2 text-sm text-white/40 transition-all hover:text-white/80"
+              >
+                取消
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         .film-grain {
