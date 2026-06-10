@@ -582,7 +582,7 @@ export default function MainGame() {
               onClick={(e) => e.stopPropagation()} 
             >
               <h2 className="text-lg sm:text-xl font-bold text-amber-900 mb-3 border-b border-amber-900/20 pb-2">
-                阿嬤的便條紙
+                阿公的便條紙
               </h2>
               <div className="text-amber-800 space-y-2 font-serif text-sm sm:text-base leading-relaxed pl-2">
                 <p>1. 看看牆上的抽抽樂</p>
