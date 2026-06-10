@@ -1,6 +1,28 @@
+"use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+  
 
 export default function Home() {
+
+  const router = useRouter();
+  // 記錄是否開始播放穿越動畫
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // 點擊開始按鈕的處理函式
+  const handleStartGame = () => {
+    if (isTransitioning) return; // 防止重複點擊
+    setIsTransitioning(true);
+
+    // 延遲 2.5 秒後（等發光與全白動畫結束），再手動切換到 /intro
+    setTimeout(() => {
+      router.push("/intro");
+    }, 2500);
+  };
+
   return (
     <main
       className="relative h-screen w-screen overflow-hidden bg-black"
@@ -10,75 +32,69 @@ export default function Home() {
         backgroundPosition: "center",
       }}
     >
-      <Link
-        href="/intro"
-        title="開始遊戲"
-        className="
-          group
-          absolute
-          left-[50.2%]
-          top-[50.5%]
-          -translate-x-1/2
-          w-[300px]
-          h-[420px]
-          cursor-pointer
-          rounded-xl
-          overflow-hidden
-          transition-transform
-          duration-300
-          hover:scale-[1.02]
-          active:scale-95
-        "
-      >
-        {/* 門框四邊透光 */}
-        <div className="absolute left-0 top-0 h-full w-2 bg-amber-200/20 blur-md animate-pulse" />
-        <div className="absolute right-0 top-0 h-full w-2 bg-amber-200/20 blur-md animate-pulse" />
-        <div className="absolute left-0 top-0 h-2 w-full bg-amber-200/18 blur-md animate-pulse" />
-        <div className="absolute left-0 bottom-0 h-2 w-full bg-amber-200/14 blur-md animate-pulse" />
+      {/* ==================== 門的白光特效層 ==================== */}
+      <motion.div
+        className="absolute z-5 pointer-events-none rounded-sm bg-white"
+        style={{
+          left: "50.5%",
+          top: "75%",
+          width: "338px",
+          height: "428px",
+        }}
+        initial={{ 
+          x: "-50%", 
+          y: "-50%", 
+          opacity: 0, 
+          filter: "blur(20px) drop-shadow(0 0 0px rgba(255,255,255,0))" 
+        }}
+        animate={isTransitioning ? {
+          opacity: [0, 0.8, 1], // 漸漸變亮
+          filter: [
+            "blur(20px) drop-shadow(0 0 10px rgba(255,255,255,0.5))",
+            "blur(10px) drop-shadow(0 0 40px rgba(255,255,255,0.9))",
+            "blur(0px) drop-shadow(0 0 100px rgba(255,255,255,1))"
+          ]
+        } : {}}
+        transition={{
+          duration: 1.5, // 門發光持續 1.5 秒
+          ease: "easeIn"
+        }}
+      />
 
-        {/* hover 才出現薄薄毛玻璃 */}
-        <div
-          className="
-            absolute
-            inset-0
-            rounded-xl
-            bg-white/0
-            backdrop-blur-0
-            transition-all
-            duration-300
-            group-hover:bg-white/8
-            group-hover:backdrop-blur-[2px]
-          "
-        />
+      {/* ==================== 開始遊戲按鈕 ==================== */}
+      <div className="absolute bottom-[15%] left-[50.5%] -translate-x-1/2 z-10">
+        <motion.div
+          className="relative cursor-pointer"
+          onClick={handleStartGame}
+          whileHover={!isTransitioning ? { scale: 1.08 } : {}}
+          whileTap={!isTransitioning ? { scale: 0.96 } : {}}
+          // 開始穿越時，按鈕自己慢慢淡出消失
+          animate={isTransitioning ? { opacity: 0, scale: 0.9, pointerEvents: "none" } : { opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20, duration: 0.5 }}
+        >
+          <Image
+            src="/images/start_button.png"
+            alt="開始遊戲"
+            width={308} 
+            height={28} 
+            className="w-full h-auto object-contain" 
+            priority
+          />
+        </motion.div>
+      </div>
 
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div
-            className="
-              px-8
-              py-3
-              rounded-full
-              bg-amber-100/25
-              backdrop-blur-md
-              border
-              border-amber-100/45
-              text-white
-              text-xl
-              font-bold
-              tracking-[0.25em]
-              drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]
-              shadow-[0_0_18px_rgba(255,210,130,0.5)]
-              transition-all
-              duration-300
-              group-hover:bg-amber-100/35
-              group-hover:shadow-[0_0_28px_rgba(255,220,150,0.85)]
-            "
-          >
-            開始遊戲
-          </div>
-        </div>
-
-        <span className="sr-only">開始遊戲</span>
-      </Link>
+      {/* ==================== 全螢幕白屏轉場層 ==================== */}
+      <motion.div
+        className="absolute inset-0 z-50 bg-white pointer-events-none"
+        initial={{ opacity: 0 }}
+        // 接續在門發光之後（利用 delay），讓整個畫面吞噬在白光中
+        animate={isTransitioning ? { opacity: 1 } : { opacity: 0 }}
+        transition={{
+          delay: 1.2,      // 門發光到一半時，全螢幕開始變白
+          duration: 1.0,    // 白屏大約閃爍擴散 1 秒
+          ease: "linear"
+        }}
+      />
     </main>
   );
 }

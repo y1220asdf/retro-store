@@ -30,10 +30,10 @@ export default function CalendarPuzzle() {
   useEffect(() => {
     // 建立音效實體
     const flip = new Audio('/audio/paper01.mp3');
-    flip.volume = 0.3; // 調整為 30% 的音量，這通常是比較舒服的背景音效大小
+    flip.volume = 0.3; 
   
     const clear = new Audio('/audio/gameclear.mp3');
-    clear.volume = 0.2; // 通關音效可以稍微大聲一點點，設為 50%
+    clear.volume = 0.2; 
   
     audioRefs.current = {
       cardFlip: flip,
