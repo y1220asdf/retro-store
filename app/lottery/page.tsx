@@ -3,43 +3,35 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 
-// 🎯 橫向 5 格，縱向 4 格
 const COLS = 5;
 const ROWS = 4;
 const TOTAL_CELLS = COLS * ROWS;
 
 type Direction = 'up' | 'down' | 'left' | 'right';
-type SFXType = 'cardFlip' | 'error' | 'success' | 'pickup';
+type SFXType = 'cardFlip' | 'success';
 
 export default function LuckyDrawGame() {
   const router = useRouter();
 
-  // ==================== 遊戲狀態管理 ====================
   const [answerIdx, setAnswerIdx] = useState<number | null>(null);
   const [flippedSet, setFlippedSet] = useState<Set<number>>(new Set());
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
 
-  // ==================== 音效架構 ====================
-  const audioRefs = useRef<{ [key: string]: HTMLAudioElement }>({});
+  const audioRefs = useRef<Record<SFXType, HTMLAudioElement | null>>({
+    cardFlip: null,
+    success: null,
+  });
+
+  const hasPlayedSuccessSound = useRef(false);
 
   useEffect(() => {
-    // 目前只啟用「選取卡片」音效
-    audioRefs.current = {
-      cardFlip: new Audio('/audio/paper01.mp3'),
-
-      // TODO: 未來音效確認後再啟用
-      // error: new Audio('/audio/wrongcall.mp3'),
-      // success: new Audio('/audio/grandvoice.mp3'),
-      // pickup: new Audio('/audio/oldphonepickup.mp3'),
-    };
+    audioRefs.current.cardFlip = new Audio('/audio/paper01.mp3');
+    audioRefs.current.success = new Audio('/audio/gameclear.mp3');
 
     const randomAnswer = Math.floor(Math.random() * TOTAL_CELLS);
     setAnswerIdx(randomAnswer);
 
     console.log("時光柑仔店神秘藏寶格號碼 (0~19):", randomAnswer);
-
-    // TODO: 未來音效確認後再啟用
-    // setTimeout(() => playSFX('pickup'), 300);
   }, []);
 
   const playSFX = (type: SFXType) => {
@@ -50,7 +42,13 @@ export default function LuckyDrawGame() {
     audio.play().catch(e => console.log(e));
   };
 
-  // ==================== 📐 正確的方向判斷邏輯 ====================
+  useEffect(() => {
+    if (isGameOver && !hasPlayedSuccessSound.current) {
+      hasPlayedSuccessSound.current = true;
+      playSFX('success');
+    }
+  }, [isGameOver]);
+
   const getRowCol = (idx: number) => {
     return {
       row: Math.floor(idx / COLS),
@@ -67,17 +65,14 @@ export default function LuckyDrawGame() {
     const rowDiff = answer.row - current.row;
     const colDiff = answer.col - current.col;
 
-    // 同一列：只能往左或右
     if (rowDiff === 0) {
       return colDiff > 0 ? 'right' : 'left';
     }
 
-    // 同一欄：只能往上或下
     if (colDiff === 0) {
       return rowDiff > 0 ? 'down' : 'up';
     }
 
-    // 斜方向：指向距離較大的方向
     if (Math.abs(rowDiff) > Math.abs(colDiff)) {
       return rowDiff > 0 ? 'down' : 'up';
     }
@@ -85,8 +80,6 @@ export default function LuckyDrawGame() {
     return colDiff > 0 ? 'right' : 'left';
   };
 
-  // ==================== 🖼️ 圖片箭頭角度 ====================
-  // 假設 lottery_arrow.png 原圖是「朝右」
   const getArrowRotation = (idx: number): number => {
     const dir = getArrowDirection(idx);
 
@@ -100,12 +93,10 @@ export default function LuckyDrawGame() {
     return rotationMap[dir];
   };
 
-  // ==================== 🖱️ 點擊處理 ====================
   const handleCardClick = (idx: number) => {
     if (isGameOver || answerIdx === null) return;
     if (flippedSet.has(idx)) return;
 
-    // 每次選取卡片時播放 paper01.mp3
     playSFX('cardFlip');
 
     const newFlipped = new Set(flippedSet);
@@ -114,28 +105,15 @@ export default function LuckyDrawGame() {
 
     if (idx === answerIdx) {
       setTimeout(() => {
-        // TODO: 未來音效確認後再啟用
-        // playSFX('success');
-    
         setIsGameOver(true);
-    
-        // 🎒 將時光膠卷收進背包
         localStorage.setItem('hasFilm', 'true');
       }, 500);
-    }else {
-      // TODO: 未來音效確認後再啟用
-      // setTimeout(() => {
-      //   playSFX('error');
-      // }, 400);
     }
   };
 
   return (
     <main className="flex h-screen w-screen items-center justify-center bg-zinc-950 p-4 overflow-hidden selection:bg-transparent">
-      {/* 16:9 比例遊戲主視窗外殼 */}
       <div className="relative inline-block w-full max-w-5xl aspect-video rounded-xl shadow-2xl bg-zinc-900 border border-white/10 overflow-hidden">
-
-        {/* 最底層場景背景 */}
         <div className="absolute inset-0 w-full h-full pointer-events-none z-0">
           <img
             src="/images/lottery_background.webp"
@@ -144,7 +122,6 @@ export default function LuckyDrawGame() {
           />
         </div>
 
-        {/* 返回鍵 */}
         <button
           onClick={() => router.push('/main')}
           className="fixed top-4 left-[86px] z-[9998] flex items-center justify-center rounded-full border border-amber-900/40 bg-[#fffdf0]/90 px-4 py-2 text-sm font-bold text-amber-900 backdrop-blur-sm shadow-[4px_4px_0px_rgba(120,60,0,0.2)] transition-all hover:bg-white active:scale-95"
@@ -152,12 +129,10 @@ export default function LuckyDrawGame() {
           ⬅ 返回柑仔店
         </button>
 
-        {/* ==================== 🏮 掛軸容器：位置不動 ==================== */}
         <div
           className="absolute inset-y-0 left-1/2 -translate-x-1/2 h-[94%] my-auto z-20 flex items-center justify-center"
           style={{ perspective: '1200px' }}
         >
-          {/* 去背抽抽樂掛軸實體底圖：輕微互動 */}
           <motion.img
             src="/images/lottery_back.webp"
             alt="抽抽樂機關掛軸"
@@ -173,7 +148,6 @@ export default function LuckyDrawGame() {
             }}
           />
 
-          {/* ==================== 🎯 卡片網格：只有這層往上移 ==================== */}
           <div
             className="absolute grid p-[0.5%]"
             style={{
@@ -207,21 +181,13 @@ export default function LuckyDrawGame() {
                         }
                       : {}
                   }
-                  whileTap={
-                    !isFlipped && !isGameOver
-                      ? {
-                          scale: 0.96,
-                        }
-                      : {}
-                  }
+                  whileTap={!isFlipped && !isGameOver ? { scale: 0.96 } : {}}
                   transition={{
                     type: 'spring',
                     stiffness: 320,
                     damping: 18,
                   }}
-                  style={{
-                    zIndex: !isFlipped ? 2 : 1,
-                  }}
+                  style={{ zIndex: !isFlipped ? 2 : 1 }}
                 >
                   <motion.div
                     className="w-full h-full relative"
@@ -229,7 +195,6 @@ export default function LuckyDrawGame() {
                     transition={{ duration: 0.45, ease: "easeInOut" }}
                     style={{ transformStyle: 'preserve-3d' }}
                   >
-                    {/* 【卡片正面】：lottery_card.png */}
                     <div
                       className="absolute inset-0 bg-cover bg-center rounded-sm"
                       style={{
@@ -239,7 +204,6 @@ export default function LuckyDrawGame() {
                       }}
                     />
 
-                    {/* 【卡片背面】 */}
                     <div
                       className="absolute inset-0 bg-[#fffdf9] border border-amber-900/10 flex flex-col items-center justify-center rounded-sm overflow-hidden"
                       style={{
@@ -249,14 +213,12 @@ export default function LuckyDrawGame() {
                       }}
                     >
                       {isAns ? (
-                        /* 答案格：膠捲／照片提示（通關後才顯示完整照片） */
                         <div className="w-full h-full flex items-center justify-center animate-fade-in">
                           <span className="text-3xl sm:text-4xl leading-none" aria-hidden>
                             🎞️
                           </span>
                         </div>
                       ) : (
-                        /* 非答案格：使用 lottery_arrow.png */
                         <div className="w-full h-full flex items-center justify-center p-2 animate-fade-in">
                           <img
                             src="/images/lottery_arrow.webp"
@@ -274,7 +236,6 @@ export default function LuckyDrawGame() {
           </div>
         </div>
 
-        {/* ==================== 📸 通關老照片放大彈窗 ==================== */}
         {isGameOver && (
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in select-none">
             <div className="bg-[#fffdf0] p-6 rounded-2xl border-4 border-amber-900 max-w-md w-[90%] text-center shadow-[0_0_50px_rgba(180,100,0,0.4)] flex flex-col items-center">
